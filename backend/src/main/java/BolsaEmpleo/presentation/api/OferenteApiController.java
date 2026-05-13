@@ -1,0 +1,135 @@
+package BolsaEmpleo.presentation.api;
+
+import BolsaEmpleo.api.dto.SkillResponse;
+import BolsaEmpleo.api.dto.SkillUpsertRequest;
+import BolsaEmpleo.logic.Caracteristica;
+import BolsaEmpleo.logic.CaracteristicaOferente;
+import BolsaEmpleo.logic.Oferente;
+import BolsaEmpleo.logic.Service;
+import BolsaEmpleo.security.UserDetailsImp;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/oferente")
+public class OferenteApiController {
+
+	private final Service service;
+
+	public OferenteApiController(Service service) {
+		this.service = service;
+	}
+
+	private Oferente currentOferente(UserDetailsImp userDetails) {
+		return service.oferenteFindByUsuarioCorreo(userDetails.getUsername())
+				.orElseThrow(() -> new IllegalArgumentException("Oferente no encontrado"));
+	}
+
+	@GetMapping("/habilidades")
+	@Transactional(readOnly = true)
+	public List<SkillResponse> getSkills(@AuthenticationPrincipal UserDetailsImp userDetails) {
+		Oferente oferente = currentOferente(userDetails);
+		List<SkillResponse> result = new ArrayList<>();
+		for (CaracteristicaOferente co : service.oferenteCaracteristicasPorOferente(oferente.getId())) {
+			result.add(ApiMapper.toSkill(co));
+		}
+		return result;
+	}
+
+	@PutMapping("/habilidades")
+	@Transactional
+	public ResponseEntity<List<SkillResponse>> replaceSkills(@AuthenticationPrincipal UserDetailsImp userDetails,
+															 @RequestBody SkillUpsertRequest request) {
+		Oferente oferente = currentOferente(userDetails);
+
+		service.oferenteCaracteristicasPorOferente(oferente.getId())
+				.forEach(co -> service.oferenteCaracteristicaDelete(co.getId()));
+
+		if (request.caracteristicasSeleccionadas() != null) {
+			for (Integer idCar : request.caracteristicasSeleccionadas()) {
+				Caracteristica caracteristica = service.caracteristicaFindById(idCar)
+						.orElseThrow(() -> new IllegalArgumentException("Característica no encontrada"));
+				Integer nivel = request.niveles() != null && request.niveles().get(idCar) != null
+						? request.niveles().get(idCar)
+						: 1;
+
+				CaracteristicaOferente co = new CaracteristicaOferente();
+				co.setIdOferente(oferente);
+				co.setIdCaracteristica(caracteristica);
+				co.setNivel(nivel);
+				service.oferenteCaracteristicaSave(co);
+			}
+		}
+
+		return ResponseEntity.ok(getSkills(userDetails));
+	}
+
+	@DeleteMapping("/habilidades/{id}")
+	@Transactional
+	public ResponseEntity<Void> deleteSkill(@AuthenticationPrincipal UserDetailsImp userDetails,
+											@PathVariable Integer id) {
+		Oferente oferente = currentOferente(userDetails);
+		CaracteristicaOferente co = service.oferenteCaracteristicaFindById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Habilidad no encontrada"));
+		if (!co.getIdOferente().getId().equals(oferente.getId())) {
+			throw new IllegalArgumentException("No puedes eliminar habilidades de otro usuario.");
+		}
+		service.oferenteCaracteristicaDelete(id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/cv")
+	@Transactional(readOnly = true)
+	public ResponseEntity<String> getCv(@AuthenticationPrincipal UserDetailsImp userDetails) {
+		Oferente oferente = currentOferente(userDetails);
+		return ResponseEntity.ok(oferente.getCv() == null ? "" : oferente.getCv());
+	}
+
+	@PostMapping("/cv")
+	@Transactional
+	public ResponseEntity<String> uploadCv(@AuthenticationPrincipal UserDetailsImp userDetails,
+										   @RequestParam("cv") MultipartFile cv) throws Exception {
+		if (cv == null || cv.isEmpty()) {
+			throw new IllegalArgumentException("Debes seleccionar un archivo PDF.");
+		}
+		String original = cv.getOriginalFilename();
+		if (original == null || !original.toLowerCase().endsWith(".pdf")) {
+			throw new IllegalArgumentException("El archivo debe ser un PDF.");
+		}
+
+		Oferente oferente = currentOferente(userDetails);
+		String nombreArchivo = oferente.getId() + ".pdf";
+		Path carpeta = Paths.get(System.getProperty("user.dir"), "uploads");
+		Files.createDirectories(carpeta);
+		cv.transferTo(carpeta.resolve(nombreArchivo).toFile());
+		oferente.setCv(nombreArchivo);
+		service.oferenteUpdate(oferente);
+		return ResponseEntity.ok(nombreArchivo);
+	}
+
+	@DeleteMapping("/cv")
+	@Transactional
+	public ResponseEntity<Void> deleteCv(@AuthenticationPrincipal UserDetailsImp userDetails) {
+		Oferente oferente = currentOferente(userDetails);
+		oferente.setCv(null);
+		service.oferenteUpdate(oferente);
+		return ResponseEntity.noContent().build();
+	}
+}

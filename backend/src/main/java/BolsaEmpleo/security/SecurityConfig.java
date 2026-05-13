@@ -1,73 +1,92 @@
 package BolsaEmpleo.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.io.IOException;
-import java.util.Set;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @Configuration
 public class SecurityConfig {
     @Autowired
-    private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    @Qualifier("jwtAuthenticationFilter")
+    private Filter jwtAuthenticationFilter;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/registro/**", "/css/**", "/js/**", "/images/**", "/puestos/buscar").permitAll()
-                        .requestMatchers("/presentation/empresas/**").hasRole("EMPRESA")
-                        .requestMatchers("/presentation/oferentes/**").hasRole("OFERENTE")
-                        .requestMatchers("/presentation/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .usernameParameter("correo")
-                        .passwordParameter("password")
-                        .successHandler(this::loginSuccessHandler)
-                        .failureHandler(customAuthenticationFailureHandler)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                );
+    @Order(1)
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) {
+        try {
+            http
+                    .securityMatcher("/api/**")
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/login").permitAll()
+                            .requestMatchers("/api/public/**").permitAll()
+                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                            .requestMatchers("/api/empresas/**").hasRole("EMPRESA")
+                            .requestMatchers("/api/oferentes/**").hasRole("OFERENTE")
+                            .anyRequest().authenticated()
+                    )
+                    .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
-
-    private void loginSuccessHandler(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     Authentication authentication) throws IOException{
-
-        Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-
-        if (roles.contains("ROLE_EMPRESA")) {
-            response.sendRedirect("/presentation/empresas/show");
-        } else if (roles.contains("ROLE_OFERENTE")) {
-            response.sendRedirect("/presentation/oferentes/show");
-        } else if (roles.contains("ROLE_ADMIN")) {
-            response.sendRedirect("/presentation/admin/show");
-        } else {
-            response.sendRedirect("/");
+            return http.build();
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo configurar la seguridad JWT", e);
         }
     }
 
     @Bean
+    @Order(2)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        try {
+            http
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers(
+                                    "/",
+                                    "/app/**",
+                                    "/login",
+                                    "/registro/**",
+                                    "/puestos/buscar",
+                                    "/presentation/**",
+                                    "/css/**",
+                                    "/js/**",
+                                    "/images/**",
+                                    "/favicon.ico",
+                                    "/error"
+                            ).permitAll()
+                            .anyRequest().permitAll()
+                    );
+
+            return http.build();
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo configurar la seguridad web", e);
+        }
+    }
+
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return  new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+        try {
+            return configuration.getAuthenticationManager();
+        } catch (Exception e) {
+            throw new IllegalStateException("No se pudo obtener AuthenticationManager", e);
+        }
     }
 }

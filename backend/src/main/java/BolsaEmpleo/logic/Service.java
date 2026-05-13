@@ -4,9 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.PageRequest;
+import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @org.springframework.stereotype.Service
@@ -139,6 +140,17 @@ public class Service {
         return puestoRepository.findByActivoTrue();
     }
 
+    public List<Puesto> puestosVisibles(boolean incluirPrivados) {
+        List<Puesto> puestos = new ArrayList<>();
+        for (Puesto puesto : puestoRepository.findByActivoTrue()) {
+            if (incluirPrivados || puesto.getTipo() == TipoPublicacion.PUBLICO) {
+                puestos.add(puesto);
+            }
+        }
+        puestos.sort(Comparator.comparing(Puesto::getId, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+        return puestos;
+    }
+
     public Iterable<PuestoCaracteristica> puestoCaracteristicasFindAll() {
         return puestoCaracteristicaRepository.findAll();
     }
@@ -208,14 +220,16 @@ public class Service {
         empresa.setUsuario(usuarioGuardado);
         empresaRepository.save(empresa);
     }
-    public Iterable<Puesto> puestosPublicosRecientes() {
-        List<Integer> ids = puestoRepository.findUltimos5Ids(PageRequest.of(0, 5));
-
-        if (ids.isEmpty()) {
+    public Iterable<Puesto> puestosVisiblesRecientes(boolean incluirPrivados) {
+        List<Puesto> visibles = puestosVisibles(incluirPrivados);
+        if (visibles.isEmpty()) {
             return Collections.emptyList();
         }
+        return visibles.subList(0, Math.min(5, visibles.size()));
+    }
 
-        return puestoRepository.findConDetallesByIds(ids);
+    public Iterable<Puesto> puestosPublicosRecientes() {
+        return puestosVisiblesRecientes(false);
     }
     public List<Empresa> empresasAprobadas() {
         return empresaRepository.findByAprobadoTrue();
@@ -249,12 +263,42 @@ public class Service {
             agregarCaracteristicaYDescendientes(hija.getId(), acumulado);
         }
     }
-    public List<Puesto> buscarPuestosPorCaracteristicas(List<Integer> idsCaracteristicas) {
-        if (idsCaracteristicas == null || idsCaracteristicas.isEmpty()) {
-            return puestoRepository.findByActivoTrue();
+
+    public Integer porcentajeCoincidenciaPuesto(Puesto puesto, List<Integer> idsCaracteristicas) {
+        if (puesto == null || idsCaracteristicas == null || idsCaracteristicas.isEmpty()) {
+            return 0;
         }
 
-        List<Puesto> puestos = puestoRepository.findByActivoTrue();
+        Set<Integer> caracteristicasPuesto = new java.util.LinkedHashSet<>();
+        for (PuestoCaracteristica pc : puestoCaracteristicasPorPuesto(puesto.getId())) {
+            if (pc.getIdCaracteristica() != null && pc.getIdCaracteristica().getId() != null) {
+                caracteristicasPuesto.add(pc.getIdCaracteristica().getId());
+            }
+        }
+
+        int coincidencias = 0;
+        for (Integer seleccionada : idsCaracteristicas) {
+            List<Integer> expandida = expandirCaracteristicasSeleccionadas(java.util.List.of(seleccionada));
+            for (Integer idPuesto : caracteristicasPuesto) {
+                if (expandida.contains(idPuesto)) {
+                    coincidencias++;
+                    break;
+                }
+            }
+        }
+
+        return (coincidencias * 100) / idsCaracteristicas.size();
+    }
+    public List<Puesto> buscarPuestosPorCaracteristicas(List<Integer> idsCaracteristicas) {
+        return buscarPuestosPorCaracteristicas(idsCaracteristicas, false);
+    }
+
+    public List<Puesto> buscarPuestosPorCaracteristicas(List<Integer> idsCaracteristicas, boolean incluirPrivados) {
+        if (idsCaracteristicas == null || idsCaracteristicas.isEmpty()) {
+            return puestosVisibles(incluirPrivados);
+        }
+
+        List<Puesto> puestos = puestosVisibles(incluirPrivados);
         List<Puesto> resultado = new ArrayList<>();
 
         List<Integer> idsExpandidos = expandirCaracteristicasSeleccionadas(idsCaracteristicas);
@@ -319,8 +363,15 @@ public class Service {
             int cumplidos = 0;
 
             for (PuestoCaracteristica req : requisitos) {
+                List<Integer> idsRequisito = expandirCaracteristicasSeleccionadas(
+                        java.util.List.of(req.getIdCaracteristica().getId())
+                );
+                int nivelRequerido = req.getNivel() == null ? 1 : req.getNivel();
+
+
                 for (CaracteristicaOferente hab : habilidades) {
-                    if (req.getIdCaracteristica().getId().equals(hab.getIdCaracteristica().getId())) {
+                    int nivelCandidato = hab.getNivel() == null ? 0 : hab.getNivel();
+                    if (idsRequisito.contains(hab.getIdCaracteristica().getId()) && nivelCandidato >= nivelRequerido) {
                         cumplidos++;
                         break;
                     }

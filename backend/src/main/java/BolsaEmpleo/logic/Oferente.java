@@ -33,6 +33,10 @@ public class Oferente {
     private String identificacion;
 
     @Size(max = 45)
+    @Column(name = "apellido", length = 45)
+    private String apellido;
+
+    @Size(max = 45)
     @Column(name = "nacionalidad", length = 45)
     private String nacionalidad;
 
