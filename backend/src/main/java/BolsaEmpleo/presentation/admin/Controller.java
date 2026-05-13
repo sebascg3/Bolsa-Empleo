@@ -5,6 +5,11 @@ import BolsaEmpleo.logic.Caracteristica;
 import BolsaEmpleo.logic.Service;
 import BolsaEmpleo.logic.Usuario;
 import BolsaEmpleo.security.UserDetailsImp;
+import com.lowagie.text.Document;
+import com.lowagie.text.Font;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -203,24 +208,24 @@ public class Controller {
 
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 
-            com.lowagie.text.Document document = new com.lowagie.text.Document();
-            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            Document document = new Document();
+            PdfWriter.getInstance(document, baos);
 
             document.open();
 
-            com.lowagie.text.Font tituloFont = new com.lowagie.text.Font(
-                    com.lowagie.text.Font.HELVETICA, 16, com.lowagie.text.Font.BOLD
+            Font tituloFont = new Font(
+                    Font.HELVETICA, 16, Font.BOLD
             );
-            com.lowagie.text.Font textoFont = new com.lowagie.text.Font(
-                    com.lowagie.text.Font.HELVETICA, 11
+            Font textoFont = new Font(
+                    Font.HELVETICA, 11
             );
 
-            document.add(new com.lowagie.text.Paragraph("Reporte de puestos publicados", tituloFont));
-            document.add(new com.lowagie.text.Paragraph("Mes: " + mes + "  Año: " + anio, textoFont));
-            document.add(new com.lowagie.text.Paragraph("Total de puestos: " + puestos.size(), textoFont));
-            document.add(new com.lowagie.text.Paragraph(" "));
+            document.add(new Paragraph("Reporte de puestos publicados", tituloFont));
+            document.add(new Paragraph("Mes: " + mes + "  Año: " + anio, textoFont));
+            document.add(new Paragraph("Total de puestos: " + puestos.size(), textoFont));
+            document.add(new Paragraph(" "));
 
-            com.lowagie.text.pdf.PdfPTable tabla = new com.lowagie.text.pdf.PdfPTable(6);
+            PdfPTable tabla = new PdfPTable(6);
             tabla.setWidthPercentage(100);
 
             tabla.addCell("ID");
