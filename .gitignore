@@ -1,0 +1,16 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Frontend
+node_modules/
+dist/
+
+# Backend
+target/
+
+# Environment variables
+.env
+
+# Logs
+*.log
