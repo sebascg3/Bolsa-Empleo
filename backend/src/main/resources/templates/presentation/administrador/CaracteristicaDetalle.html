@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Característica</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Styles.css}">
+</head>
+<body>
+
+<main>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand text-white"
+           th:href="@{/presentation/admin/show}">
+            Bolsa de Empleo
+        </a>
+        <div class="ml-auto">
+            <span class="text-white mr-3 small"
+                  th:text="${correo != null ? correo : 'Sesión iniciada'}"></span>
+
+            <a class="btn btn-navbar mr-2"
+               th:href="@{/presentation/admin/show}">
+                Dashboard
+            </a>
+
+            <a class="btn btn-empresa mr-2"
+               th:href="@{/presentation/admin/empresasPendientes}">
+                Empresas pendientes
+            </a>
+
+            <a class="btn btn-oferente mr-2"
+               th:href="@{/presentation/admin/oferentesPendientes}">
+                Oferentes pendientes
+            </a>
+
+            <a class="btn btn-caracteristicas mr-2"
+               th:href="@{/presentation/admin/caracteristicas}">
+                Características
+            </a>
+
+            <a class="btn btn-login"
+               th:href="@{/logout}">
+                Cerrar sesión
+            </a>
+        </div>
+    </nav>
+
+    <div class="container hero-section">
+        <h1 class="titulo" th:text="${caracteristicaActual.nombre}">Detalle</h1>
+        <p class="subtitulo">Navega por niveles dentro de las características</p>
+    </div>
+
+    <div class="container mt-4">
+        <div th:if="${mensaje != null}"
+             class="alert alert-success text-center"
+             th:text="${mensaje}"></div>
+
+        <div th:if="${error != null}"
+             class="alert alert-danger text-center"
+             th:text="${error}"></div>
+    </div>
+
+    <div class="container mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/presentation/admin/caracteristicas}">Raíces</a>
+                </li>
+
+                <li class="breadcrumb-item"
+                    th:each="item, stat : ${ruta}"
+                    th:classappend="${stat.last} ? 'active'">
+                    <a th:if="${!stat.last}"
+                       th:href="@{/presentation/admin/caracteristicas/{id}(id=${item.id})}"
+                       th:text="${item.nombre}"></a>
+
+                    <span th:if="${stat.last}"
+                          th:text="${item.nombre}"></span>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="container mb-3">
+        <a th:if="${padre != null}"
+           class="btn btn-detalle mr-2"
+           th:href="@{/presentation/admin/caracteristicas/{id}(id=${padre.id})}">
+            Volver al padre
+        </a>
+
+        <a class="btn btn-detalle"
+           th:href="@{/presentation/admin/caracteristicas}">
+            Volver a raíces
+        </a>
+    </div>
+
+    <div class="container mt-3 mb-5">
+        <div class="row">
+
+            <div class="col-md-7 mb-4">
+                <div class="card puesto-card shadow h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            Hijas de <span th:text="${caracteristicaActual.nombre}">Nombre</span>
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:if="${hijas == null or #lists.isEmpty(hijas)}">
+                                    <td colspan="2" class="text-center text-muted">
+                                        No hay subcaracterísticas registradas.
+                                    </td>
+                                </tr>
+
+                                <tr th:each="hija : ${hijas}">
+                                    <td>
+                                        <strong th:text="${hija.nombre}">Nombre</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <a class="btn btn-detalle mt-2"
+                                           th:href="@{/presentation/admin/caracteristicas/{id}(id=${hija.id})}">
+                                            Entrar
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 mb-4">
+                <div class="card puesto-card shadow h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Agregar característica</h5>
+
+                        <form th:action="@{/presentation/admin/caracteristicas/guardar}" method="post">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text"
+                                       name="nombre"
+                                       class="form-control"
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Padre</label>
+                                <select name="padreId" class="form-control">
+                                    <option value="">Sin padre (raíz)</option>
+
+                                    <option th:each="hija : ${hijas}"
+                                            th:value="${hija.id}"
+                                            th:text="${hija.nombre}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-crear">
+                                Crear
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>© 2026 Bolsa de Empleo</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>

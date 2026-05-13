@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes de Puestos</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" th:href="@{/css/Styles.css}">
+</head>
+<body>
+<main>
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <a class="navbar-brand text-white" th:href="@{/presentation/admin/show}">Bolsa de Empleo</a>
+
+    <div class="ml-auto">
+      <a class="btn btn-navbar mr-2"
+         th:href="@{/presentation/admin/show}">
+        Dashboard
+      </a>
+      <a class="btn btn-empresa mr-2" th:href="@{/presentation/admin/empresasPendientes}">Empresas Pendientes</a>
+      <a class="btn btn-oferente mr-2" th:href="@{/presentation/admin/oferentesPendientes}">Oferentes Pendientes</a>
+      <a class="btn btn-caracteristicas mr-2" th:href="@{/presentation/admin/caracteristicas}">Características</a>
+      <a class="btn btn-Reportes mr-2" th:href="@{/presentation/admin/reportes}">Reportes</a>
+      <a class="btn btn-login" th:href="@{/logout}">Cerrar sesión</a>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="card shadow p-4">
+      <h2 class="mb-4">Reporte de puestos publicados</h2>
+
+      <form th:action="@{/presentation/admin/reportes/puestos}" method="get" class="form-row align-items-end">
+        <div class="form-group col-md-4">
+          <label for="mes">Mes</label>
+          <select id="mes" name="mes" class="form-control" required>
+            <option value="">Seleccione un mes</option>
+            <option value="1" th:selected="${mesSeleccionado == 1}">Enero</option>
+            <option value="2" th:selected="${mesSeleccionado == 2}">Febrero</option>
+            <option value="3" th:selected="${mesSeleccionado == 3}">Marzo</option>
+            <option value="4" th:selected="${mesSeleccionado == 4}">Abril</option>
+            <option value="5" th:selected="${mesSeleccionado == 5}">Mayo</option>
+            <option value="6" th:selected="${mesSeleccionado == 6}">Junio</option>
+            <option value="7" th:selected="${mesSeleccionado == 7}">Julio</option>
+            <option value="8" th:selected="${mesSeleccionado == 8}">Agosto</option>
+            <option value="9" th:selected="${mesSeleccionado == 9}">Septiembre</option>
+            <option value="10" th:selected="${mesSeleccionado == 10}">Octubre</option>
+            <option value="11" th:selected="${mesSeleccionado == 11}">Noviembre</option>
+            <option value="12" th:selected="${mesSeleccionado == 12}">Diciembre</option>
+          </select>
+        </div>
+
+        <div class="form-group col-md-4">
+          <label for="anio">Año</label>
+          <input type="number" id="anio" name="anio" class="form-control"
+                 th:value="${anioSeleccionado}" min="2000" max="2100" required>
+        </div>
+
+        <div class="form-group col-md-4">
+          <button type="submit" class="btn btn-publicar btn-block">Generar reporte</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-4" th:if="${mesSeleccionado != null and anioSeleccionado != null}">
+      <div class="card shadow p-4">
+        <h4>
+          Resultados del mes
+          <span th:text="${mesSeleccionado}"></span> /
+          <span th:text="${anioSeleccionado}"></span>
+        </h4>
+
+        <p class="mt-3">
+          <strong>Total de puestos publicados:</strong>
+          <span th:text="${total}">0</span>
+        </p>
+        <div class="mt-3">
+          <a class="btn btn-danger"
+             th:href="@{/presentation/admin/reportes/puestos/pdf(mes=${mesSeleccionado}, anio=${anioSeleccionado})}">
+            Exportar a PDF
+          </a>
+        </div>
+        <div th:if="${#lists.isEmpty(puestos)}" class="alert alert-warning mt-3">
+          No se encontraron puestos publicados para ese período.
+        </div>
+
+        <div th:if="${!#lists.isEmpty(puestos)}" class="table-responsive mt-3">
+          <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+            <tr>
+              <th>ID</th>
+              <th>Empresa</th>
+              <th>Descripción</th>
+              <th>Salario</th>
+              <th>Tipo</th>
+              <th>Activo</th>
+              <th>Fecha</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${puestos}">
+              <td th:text="${p.id}">1</td>
+              <td th:text="${p.idEmpresa.usuario.nombre}">Empresa</td>
+              <td th:text="${p.descripcion}">Descripción</td>
+              <td th:text="${p.salario}">0</td>
+              <td th:text="${p.tipo}">PUBLICO</td>
+              <td th:text="${p.activo ? 'Sí' : 'No'}">Sí</td>
+              <td th:text="${p.fecha}">2026-03-23</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

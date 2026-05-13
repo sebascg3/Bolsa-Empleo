@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Oferente</title>
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/Styles.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <a class="navbar-brand text-white" th:href="@{/}">
+        Bolsa de Empleo
+    </a>
+
+    <div class="ml-auto">
+        <a class="btn btn-login mr-2" th:href="@{/login}">Iniciar sesión</a>
+        <a class="btn btn-empresa mr-2" th:href="@{/registro/empresa}">
+            Registrar empresa
+        </a>
+        <a class="btn btn-navbar" th:href="@{/puestos/buscar}">Buscar puestos</a>
+    </div>
+</nav>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Registro de Oferente</h2>
+
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                    <form th:action="@{/registro/oferente}" method="post" enctype="multipart/form-data">
+
+                        <h4 class="mb-3">Datos de usuario</h4>
+
+                        <div class="form-group">
+                            <label for="nombre">Nombre completo</label>
+                            <input type="text"
+                                   id="nombre"
+                                   name="nombre"
+                                   class="form-control"
+                                   th:value="${usuario.nombre}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correo">Correo electrónico</label>
+                            <input type="email"
+                                   id="correo"
+                                   name="correo"
+                                   class="form-control"
+                                   th:value="${usuario.correo}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="form-control"
+                                   required>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h4 class="mb-3">Datos del oferente</h4>
+
+                        <div class="form-group">
+                            <label for="identificacion">Identificación</label>
+                            <input type="text"
+                                   id="identificacion"
+                                   name="identificacion"
+                                   class="form-control"
+                                   th:value="${oferente.identificacion}"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nacionalidad">Nacionalidad</label>
+                            <input type="text"
+                                   id="nacionalidad"
+                                   name="nacionalidad"
+                                   class="form-control"
+                                   th:value="${oferente.nacionalidad}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="text"
+                                   id="telefono"
+                                   name="telefono"
+                                   class="form-control"
+                                   th:value="${oferente.telefono}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="residencia">Residencia</label>
+                            <input type="text"
+                                   id="residencia"
+                                   name="residencia"
+                                   class="form-control"
+                                   th:value="${oferente.residencia}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cv">CV (PDF)</label>
+                            <input type="file"
+                                   id="cv"
+                                   name="cv"
+                                   class="form-control"
+                                   accept=".pdf,application/pdf"
+                                   required>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary mr-2">
+                                Registrar oferente
+                            </button>
+                            <a th:href="@{/}" class="btn btn-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer text-center py-3">
+    <p class="mb-0">© 2026 Bolsa de Empleo</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>

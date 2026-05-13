@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Error</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body { background: #f8f9fa; }
+    .card { margin-top: 4rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="text-danger mb-3">¡Ups! Algo salió mal</h2>
+
+          <p th:if="${status}" class="mb-1"><strong>Código:</strong> <span th:text="${status}">500</span></p>
+          <p th:if="${error}" class="mb-1"><strong>Error:</strong> <span th:text="${error}">Error</span></p>
+          <p th:if="${message}" class="mb-1"><strong>Detalle:</strong> <span th:text="${message}">Mensaje</span></p>
+          <p th:if="${path}" class="mb-3"><strong>Ruta:</strong> <span th:text="${path}">/ruta</span></p>
+
+          <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="javascript:history.back()">Volver</a>
+            <a class="btn btn-secondary" th:href="@{/}">Inicio</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

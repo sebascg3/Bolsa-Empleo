@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Características</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/Styles.css}">
+</head>
+<body>
+
+<main>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <a class="navbar-brand text-white"
+           th:href="@{/presentation/admin/show}">
+            Bolsa de Empleo
+        </a>
+        <div class="ml-auto">
+              <span class="text-white mr-3 small"
+                    th:text="${correo != null ? correo : 'Sesión iniciada'}">
+
+            </span>
+            <a class="btn btn-navbar mr-2"
+               th:href="@{/presentation/admin/show}">
+                Dashboard
+            </a>
+            <a class="btn btn-empresa mr-2"
+               th:href="@{/presentation/admin/empresasPendientes}">
+                Empresas pendientes
+            </a>
+
+            <a class="btn btn-oferente mr-2"
+               th:href="@{/presentation/admin/oferentesPendientes}">
+                Oferentes pendientes
+            </a>
+
+            <a class="btn btn-caracteristicas mr-2"
+               th:href="@{/presentation/admin/caracteristicas}">
+                Características
+            </a>
+            <a class="btn btn-Reportes mr-2"
+               href="/presentation/admin/Reportes"
+               th:href="@{/presentation/admin/reportes}">
+                Reportes
+            </a>
+            <a class="btn btn-login"
+               th:href="@{/logout}">
+                Cerrar sesión
+            </a>
+        </div>
+    </nav>
+
+    <div class="container hero-section">
+        <h1 class="titulo">Características</h1>
+        <p class="subtitulo">Administra categorías padre e hijas</p>
+    </div>
+
+    <div class="container mt-4">
+        <div th:if="${mensaje != null}"
+             class="alert alert-success text-center"
+             th:text="${mensaje}"></div>
+
+        <div th:if="${error != null}"
+             class="alert alert-danger text-center"
+             th:text="${error}"></div>
+    </div>
+
+
+    <div class="container mt-3 mb-5">
+        <div class="row">
+
+
+            <div class="col-md-7 mb-4">
+                <div class="card puesto-card shadow h-100">
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-3">Lista de características</h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+
+                                <tr th:if="${caracteristicasJerarquicas == null or #maps.isEmpty(caracteristicasJerarquicas)}">
+                                    <td colspan="2" class="text-center text-muted">
+                                        No hay características registradas.
+                                    </td>
+                                </tr>
+
+                                <tr th:each="entry : ${caracteristicasJerarquicas}">
+                                    <td>
+                                        <strong th:text="${entry.key.nombre}">Nombre</strong>
+
+
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a class="btn btn-detalleCarac mt-2"
+                                           th:href="@{/presentation/admin/caracteristicas/{id}(id=${entry.key.id})}">
+                                            Entrar
+                                        </a>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 mb-4">
+                <div class="card puesto-card shadow h-100">
+                    <div class="card-body">
+
+                        <h5 class="card-title mb-3">Agregar característica</h5>
+
+                        <form th:action="@{/presentation/admin/caracteristicas/guardar}" method="post">
+
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text"
+                                       name="nombre"
+                                       class="form-control"
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Padre</label>
+                                <select name="padreId" class="form-control">
+
+                                    <option value="">Sin padre (raíz)</option>
+
+                                    <option th:each="entry : ${caracteristicasJerarquicas}"
+                                            th:value="${entry.key.id}"
+                                            th:text="${entry.key.nombre}">
+                                    </option>
+
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-crear">
+                                Crear
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>© 2026 Bolsa de Empleo</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
