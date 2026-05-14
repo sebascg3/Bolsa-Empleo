@@ -121,7 +121,8 @@ public class DashboardApiController {
     private List<JobCardResponse> toJobCards(Iterable<Puesto> puestos) {
         List<JobCardResponse> resultado = new ArrayList<>();
         for (Puesto puesto : puestos) {
-            resultado.add(ApiMapper.toJobCard(puesto));
+            resultado.add(ApiMapper.toJobCard(puesto, null,
+                    service.puestoCaracteristicasFindByPuesto(puesto.getId())));
         }
         return resultado;
     }

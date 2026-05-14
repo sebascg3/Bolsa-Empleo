@@ -52,7 +52,8 @@ public class CompanyApiController {
         Empresa empresa = currentCompany(userDetails);
         List<JobCardResponse> result = new ArrayList<>();
         for (Puesto puesto : service.puestosFindByEmpresa(empresa)) {
-            result.add(ApiMapper.toJobCard(puesto));
+            result.add(ApiMapper.toJobCard(puesto, null,
+                    service.puestoCaracteristicasFindByPuesto(puesto.getId())));
         }
         return result;
     }
@@ -89,7 +90,8 @@ public class CompanyApiController {
             }
         }
 
-        return ResponseEntity.ok(ApiMapper.toJobCard(saved));
+        return ResponseEntity.ok(ApiMapper.toJobCard(saved, null,
+                service.puestoCaracteristicasFindByPuesto(saved.getId())));
     }
 
     @PatchMapping("/puestos/{id}/toggle")
@@ -105,7 +107,8 @@ public class CompanyApiController {
 
         puesto.setActivo(!Boolean.TRUE.equals(puesto.getActivo()));
         Puesto updated = service.puestoUpdate(puesto);
-        return ResponseEntity.ok(ApiMapper.toJobCard(updated));
+        return ResponseEntity.ok(ApiMapper.toJobCard(updated, null,
+                service.puestoCaracteristicasFindByPuesto(updated.getId())));
     }
 
     @GetMapping("/puestos/{puestoId}/candidatos")
@@ -127,7 +130,8 @@ public class CompanyApiController {
         }
 
         return new CandidateSearchResponse(
-                ApiMapper.toJobCard(resultado.getPuesto()),
+                ApiMapper.toJobCard(resultado.getPuesto(), null,
+                        service.puestoCaracteristicasFindByPuesto(resultado.getPuesto().getId())),
                 candidatos,
                 resultado.getRequisitosCumplidos(),
                 resultado.getPorcentajes(),

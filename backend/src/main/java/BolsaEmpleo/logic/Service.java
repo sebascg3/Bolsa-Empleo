@@ -507,4 +507,8 @@ public class Service {
     public List<Puesto> puestosPorMesYAnio(Integer mes, Integer anio) {
         return puestoRepository.findByMesAndAnio(mes, anio);
     }
+
+    public List<PuestoCaracteristica> puestoCaracteristicasFindByPuesto(int idPuesto) {
+        return puestoCaracteristicaRepository.findByIdPuestoId(idPuesto);
+    }
 }

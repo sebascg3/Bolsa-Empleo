@@ -24,13 +24,26 @@ public final class ApiMapper {
     }
 
     public static JobCardResponse toJobCard(Puesto puesto) {
-        return toJobCard(puesto, null);
+        return toJobCard(puesto, null, java.util.Collections.emptyList());
     }
 
     public static JobCardResponse toJobCard(Puesto puesto, Integer coincidencia) {
+        return toJobCard(puesto, coincidencia, java.util.Collections.emptyList());
+    }
+
+    public static JobCardResponse toJobCard(Puesto puesto, Integer coincidencia,
+                                            List<BolsaEmpleo.logic.PuestoCaracteristica> caracteristicas) {
         String empresa = null;
         if (puesto.getIdEmpresa() != null && puesto.getIdEmpresa().getUsuario() != null) {
             empresa = puesto.getIdEmpresa().getUsuario().getNombre();
+        }
+        List<String> requisitos = new java.util.ArrayList<>();
+        if (caracteristicas != null) {
+            for (BolsaEmpleo.logic.PuestoCaracteristica pc : caracteristicas) {
+                if (pc.getIdCaracteristica() != null) {
+                    requisitos.add(pc.getIdCaracteristica().getNombre() + " (nivel " + pc.getNivel() + ")");
+                }
+            }
         }
         return new JobCardResponse(
                 puesto.getId(),
@@ -40,7 +53,8 @@ public final class ApiMapper {
                 puesto.getTipo() != null ? puesto.getTipo().name() : null,
                 puesto.getActivo(),
                 puesto.getFecha(),
-                coincidencia
+                coincidencia,
+                requisitos
         );
     }
 

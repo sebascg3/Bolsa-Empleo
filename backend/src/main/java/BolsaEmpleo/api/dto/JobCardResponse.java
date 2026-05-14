@@ -10,7 +10,8 @@ public record JobCardResponse(
         String tipo,
         Boolean activo,
         LocalDate fecha,
-        Integer coincidencia
-) {
+        Integer coincidencia,
+        // ← agregar esto
+        java.util.List<String> requisitos) {
 }
 
