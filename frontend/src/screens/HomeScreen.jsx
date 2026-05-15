@@ -33,7 +33,7 @@ function HomeScreen({ onNavigate, token }) {
     return () => {
       active = false
     }
-  }, [])
+  }, [token])
 
   return (
     <section className="page-section">

@@ -38,7 +38,7 @@ function SearchScreen({ token }) {
     return () => {
       active = false
     }
-  }, [])
+  }, [token])
 
   function toggleSelected(id) {
     setSelectedIds((current) =>
