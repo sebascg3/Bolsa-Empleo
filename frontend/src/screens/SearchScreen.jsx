@@ -9,6 +9,7 @@ function SearchScreen({ token }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const activeFilters = selectedIds.length
 
   useEffect(() => {
     let active = true
@@ -77,23 +78,57 @@ function SearchScreen({ token }) {
 
   return (
     <section className="page-section">
-      <div className="page-hero">
-        <div>
+      <div className="page-hero hero-split">
+        <div className="hero-copy">
           <p className="eyebrow">Búsqueda pública</p>
           <h1>Filtra puestos por características</h1>
           <p className="lead">
             Esta pantalla migra la búsqueda tradicional a React y actualiza los resultados sin
             recargar la página.
           </p>
+
+          <div className="page-actions">
+            <button className="primary-button" onClick={search}>
+              Buscar ahora
+            </button>
+            <button className="secondary-button" onClick={clearFilters}>
+              Limpiar filtros
+            </button>
+          </div>
         </div>
-        <div className="page-actions">
-          <button className="primary-button" onClick={search}>
-            Buscar
-          </button>
-          <button className="secondary-button" onClick={clearFilters}>
-            Limpiar filtros
-          </button>
-        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Sugerencia</p>
+          <div className="hero-steps">
+            <article>
+              <strong>Selecciona habilidades</strong>
+              <span>Marca una o varias características del árbol para afinar la coincidencia.</span>
+            </article>
+            <article>
+              <strong>Revisa resultados</strong>
+              <span>Las tarjetas muestran la coincidencia y el detalle visible al pasar el mouse.</span>
+            </article>
+            <article>
+              <strong>Sin recargar</strong>
+              <span>Los filtros se envían por `fetch`, así la experiencia es más ágil.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <div className="metric-grid">
+        <article className="metric-card">
+          <span>Filtros activos</span>
+          <strong>{String(activeFilters).padStart(2, '0')}</strong>
+        </article>
+        <article className="metric-card">
+          <span>Resultados visibles</span>
+          <strong>{String(jobs.length).padStart(2, '0')}</strong>
+        </article>
+        <article className="metric-card">
+          <span>Privados</span>
+          <strong>{token ? 'Incluidos' : 'Ocultos'}</strong>
+        </article>
       </div>
 
       {loading ? <p className="info-banner">Cargando características y resultados...</p> : null}

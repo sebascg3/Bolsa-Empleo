@@ -42,11 +42,43 @@ function RegisterCompanyScreen({ onNavigate }) {
 
   return (
     <section className="page-section auth-section">
-      <div className="content-card auth-card">
-        <p className="eyebrow">Registro público</p>
-        <h1>Crear cuenta de empresa</h1>
-        <p className="lead">Esta pantalla reemplaza el formulario Thymeleaf de registro de empresas.</p>
+      <div className="page-hero hero-split auth-hero">
+        <div className="hero-copy">
+          <p className="eyebrow">Registro público</p>
+          <h1>Crear cuenta de empresa</h1>
+          <p className="lead">
+            Registra tu organización para publicar puestos de trabajo y revisar candidatos una vez
+            que el administrador apruebe tu acceso.
+          </p>
 
+          <div className="hero-steps">
+            <article>
+              <strong>Perfil corporativo</strong>
+              <span>Captura nombre, ubicación, contacto y una breve descripción.</span>
+            </article>
+            <article>
+              <strong>Validación</strong>
+              <span>Tu solicitud quedará pendiente hasta que un administrador la apruebe.</span>
+            </article>
+            <article>
+              <strong>Publica vacantes</strong>
+              <span>Después podrás crear puestos públicos o privados desde tu panel.</span>
+            </article>
+          </div>
+        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Qué necesitas</p>
+          <div className="checklist">
+            <span>Nombre comercial</span>
+            <span>Correo válido</span>
+            <span>Contraseña segura</span>
+            <span>Ubicación y teléfono</span>
+          </div>
+        </aside>
+      </div>
+
+      <div className="content-card auth-card">
         {error ? <p className="error-banner">{error}</p> : null}
         {success ? <p className="global-message">{success}</p> : null}
 

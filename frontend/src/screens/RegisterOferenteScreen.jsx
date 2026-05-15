@@ -51,11 +51,43 @@ function RegisterOferenteScreen({ onNavigate }) {
 
   return (
     <section className="page-section auth-section">
-      <div className="content-card auth-card">
-        <p className="eyebrow">Registro público</p>
-        <h1>Crear cuenta de oferente</h1>
-        <p className="lead">Esta pantalla reemplaza el formulario Thymeleaf de registro de candidatos.</p>
+      <div className="page-hero hero-split auth-hero">
+        <div className="hero-copy">
+          <p className="eyebrow">Registro público</p>
+          <h1>Crear cuenta de oferente</h1>
+          <p className="lead">
+            Completa tu perfil profesional para que las empresas puedan encontrarte y comparar tus
+            habilidades con los puestos disponibles.
+          </p>
 
+          <div className="hero-steps">
+            <article>
+              <strong>Perfil personal</strong>
+              <span>Ingresa tu nombre, apellido, identificación y datos de contacto.</span>
+            </article>
+            <article>
+              <strong>Currículo PDF</strong>
+              <span>Sube tu hoja de vida para que las empresas puedan revisarte al detalle.</span>
+            </article>
+            <article>
+              <strong>Habilidades</strong>
+              <span>Luego podrás ajustar tus características y niveles desde tu panel.</span>
+            </article>
+          </div>
+        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Antes de empezar</p>
+          <div className="checklist">
+            <span>Identificación</span>
+            <span>Correo válido</span>
+            <span>Primer apellido</span>
+            <span>CV en PDF</span>
+          </div>
+        </aside>
+      </div>
+
+      <div className="content-card auth-card">
         {error ? <p className="error-banner">{error}</p> : null}
         {success ? <p className="global-message">{success}</p> : null}
 

@@ -103,16 +103,44 @@ function OferenteScreen({ token, onNavigate }) {
 
   return (
     <section className="page-section">
-      <div className="page-hero">
-        <div>
+      <div className="page-hero hero-split">
+        <div className="hero-copy">
           <p className="eyebrow">Oferente</p>
           <h1>Perfil, CV y habilidades</h1>
-          <p className="lead">Pantalla React que reemplaza `CV.html` y `MisHabilidades.html`.</p>
+          <p className="lead">
+            Actualiza tu hoja de vida, selecciona tus destrezas y visualiza cómo te comparan las
+            empresas frente a los puestos disponibles.
+          </p>
+
+          <div className="page-actions">
+            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
+            <button className="secondary-button" onClick={() => onNavigate('search')}>Buscar puestos</button>
+          </div>
         </div>
-        <div className="page-actions">
-          <button className="secondary-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
-          <button className="secondary-button" onClick={() => onNavigate('search')}>Buscar puestos</button>
-        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Estado del perfil</p>
+          <div className="hero-steps">
+            <article>
+              <strong>CV</strong>
+              <span>{cv || 'Sin archivo cargado'}</span>
+            </article>
+            <article>
+              <strong>Habilidades</strong>
+              <span>{skills.length} características registradas</span>
+            </article>
+            <article>
+              <strong>Compatibilidad</strong>
+              <span>Mejora tu nivel para aparecer en más búsquedas.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <div className="metric-grid">
+        <article className="metric-card"><span>CV</span><strong>{cv ? 'Cargado' : 'Pendiente'}</strong></article>
+        <article className="metric-card"><span>Habilidades</span><strong>{String(skills.length).padStart(2, '0')}</strong></article>
+        <article className="metric-card"><span>Seleccionadas</span><strong>{String(selectedIds.length).padStart(2, '0')}</strong></article>
       </div>
 
       {loading ? <p className="info-banner">Cargando perfil de oferente...</p> : null}

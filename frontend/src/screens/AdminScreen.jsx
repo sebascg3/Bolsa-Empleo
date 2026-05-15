@@ -103,16 +103,44 @@ function AdminScreen({ token, onNavigate }) {
 
   return (
     <section className="page-section">
-      <div className="page-hero">
-        <div>
+      <div className="page-hero hero-split">
+        <div className="hero-copy">
           <p className="eyebrow">Administrador</p>
           <h1>Control de catálogo y aprobaciones</h1>
-          <p className="lead">Pantalla React que reemplaza `Caracteristicas`, `EmpresasPendientes`, `OferentesPendientes` y `Reportes`.</p>
+          <p className="lead">
+            Gestiona el catálogo jerárquico, aprueba registros pendientes y revisa reportes de la
+            operación sin salir de una sola pantalla.
+          </p>
+
+          <div className="page-actions">
+            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
+            <button className="secondary-button" onClick={() => onNavigate('home')}>Inicio</button>
+          </div>
         </div>
-        <div className="page-actions">
-          <button className="secondary-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
-          <button className="secondary-button" onClick={() => onNavigate('home')}>Inicio</button>
-        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Tareas clave</p>
+          <div className="hero-steps">
+            <article>
+              <strong>Aprobar</strong>
+              <span>Empresas y oferentes nuevos antes de que entren al sistema.</span>
+            </article>
+            <article>
+              <strong>Catalogar</strong>
+              <span>Agrega características madre e hijas para publicar vacantes.</span>
+            </article>
+            <article>
+              <strong>Analizar</strong>
+              <span>Consulta reportes de puestos para una visión rápida del mes.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <div className="metric-grid">
+        <article className="metric-card"><span>Características</span><strong>{String(tree.length).padStart(2, '0')}</strong></article>
+        <article className="metric-card"><span>Empresas pendientes</span><strong>{String(pendingCompanies.length).padStart(2, '0')}</strong></article>
+        <article className="metric-card"><span>Oferentes pendientes</span><strong>{String(pendingApplicants.length).padStart(2, '0')}</strong></article>
       </div>
 
       {loading ? <p className="info-banner">Cargando panel de administración...</p> : null}

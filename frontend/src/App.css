@@ -9,6 +9,9 @@
   gap: 16px;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 12px;
+  z-index: 30;
   margin-bottom: 18px;
   padding: 16px 18px;
   border-radius: 22px;
@@ -18,20 +21,50 @@
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
   border: 0;
   background: transparent;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #0f172a;
   cursor: pointer;
+}
+
+.brand span {
+  display: grid;
+  gap: 2px;
+}
+
+.brand small {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #8b5cf6, #4f46e5);
+  color: #fff;
+  font-size: 0.92rem;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.3);
 }
 
 .topnav {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
+.topnav-link,
 .topnav button,
 .primary-button,
 .secondary-button,
@@ -41,7 +74,23 @@
   padding: 11px 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.topnav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: rgba(148, 163, 184, 0.12);
+  color: #0f172a;
+}
+
+.topnav-link.is-active {
+  background: rgba(79, 70, 229, 0.14);
+  color: #4338ca;
+  box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.2);
 }
 
 .topnav button,
@@ -62,10 +111,28 @@
 }
 
 .topnav button:hover,
+.topnav-link:hover,
 .primary-button:hover,
 .secondary-button:hover,
 .nav-cta:hover {
   transform: translateY(-1px);
+}
+
+.topnav-link:hover {
+  background: rgba(79, 70, 229, 0.12);
+}
+
+.topnav-link:focus-visible,
+.topnav button:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.nav-cta:focus-visible,
+.brand:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.25);
+  outline-offset: 2px;
 }
 
 .global-message,
@@ -108,6 +175,101 @@
   justify-content: space-between;
   gap: 24px;
   padding: 26px;
+}
+
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
+  align-items: stretch;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 18px;
+}
+
+.hero-panel {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.08), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(79, 70, 229, 0.12);
+}
+
+.hero-panel p {
+  margin: 0;
+}
+
+.hero-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-steps article {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.hero-steps strong {
+  font-size: 0.96rem;
+}
+
+.hero-steps span {
+  color: #475569;
+  line-height: 1.5;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.metric-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  display: grid;
+  gap: 8px;
+}
+
+.metric-card span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metric-card strong {
+  font-size: 1.35rem;
+  color: #0f172a;
+}
+
+.section-intro {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  padding: 6px 2px 0;
+}
+
+.section-intro h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.section-intro p {
+  margin: 0;
+  color: #475569;
+  max-width: 60ch;
 }
 
 .page-actions {
@@ -153,10 +315,26 @@
 }
 
 .job-card {
+  position: relative;
   padding: 18px;
   border-radius: 18px;
-  background: rgba(248, 250, 252, 0.95);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.96));
   border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+/* Ensure hovered card and its popover are above other cards
+   - add a high z-index to the hovered card so its stacking context sits above siblings
+   - raise popover z-index to be extra-safe */
+.job-card:hover {
+  z-index: 600; /* above topbar (30) and other elements */
 }
 
 .job-card__topline {
@@ -185,6 +363,23 @@
   color: #4338ca;
   font-weight: 700;
   font-size: 0.82rem;
+}
+
+.job-pill--state.is-active {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.job-pill--state.is-inactive {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.job-card__badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .job-card__meta,
@@ -271,6 +466,61 @@
   color: #7c3aed;
 }
 
+.role-badges,
+.checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.role-badge,
+.checklist span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #334155;
+  font-weight: 700;
+}
+
+.checklist {
+  flex-direction: column;
+}
+
+.checklist span {
+  justify-content: flex-start;
+  border-radius: 14px;
+}
+
+.job-card__popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 660; /* keep popover above its card's z-index */
+  min-width: min(320px, 100%);
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+
+.job-card__popover-title {
+  margin: 0 0 8px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.job-card__requisitos {
+  margin: 0;
+  padding-left: 20px;
+  color: #475569;
+  line-height: 1.7;
+}
+
 .auth-section {
   max-width: 780px;
   margin: 0 auto;
@@ -339,6 +589,20 @@
   color: #475569;
 }
 
+.hero-split.auth-hero {
+  margin-bottom: 0;
+}
+
+.auth-section .content-card.auth-card {
+  margin-top: 0;
+}
+
+.page-actions button,
+.page-actions .secondary-button,
+.page-actions .primary-button {
+  min-height: 44px;
+}
+
 @media (max-width: 960px) {
   .page-hero,
   .topbar,
@@ -356,6 +620,13 @@
   .job-card__meta,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-split,
+  .section-intro {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -379,7 +650,12 @@
   .topnav button,
   .primary-button,
   .secondary-button,
-  .nav-cta {
+  .nav-cta,
+  .topnav-link {
+    width: 100%;
+  }
+
+  .brand {
     width: 100%;
   }
 }

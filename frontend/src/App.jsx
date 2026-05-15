@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { HashRouter, Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen'
 import SearchScreen from './screens/SearchScreen'
 import LoginScreen from './screens/LoginScreen'
@@ -162,36 +162,49 @@ function AppRouter() {
     navigate(routePaths.home, { replace: true })
   }
 
-  const topbarButtons = (
-    <>
-      <button type="button" onClick={() => goTo('home')}>Inicio</button>
-      <button type="button" onClick={() => goTo('search')}>Buscar puestos</button>
-      <button type="button" onClick={() => goTo('register-oferente')}>Registro oferente</button>
-      <button type="button" onClick={() => goTo('register-empresa')}>Registro empresa</button>
-      <button type="button" onClick={() => goTo('dashboard')}>Dashboard</button>
-      {user?.rol === 'EMPRESA' ? <button type="button" onClick={() => goTo('empresa')}>Empresa</button> : null}
-      {user?.rol === 'OFERENTE' ? <button type="button" onClick={() => goTo('oferente')}>Oferente</button> : null}
-      {user?.rol === 'ADMIN' ? <button type="button" onClick={() => goTo('admin')}>Admin</button> : null}
-      {token ? (
-        <button type="button" className="nav-cta" onClick={handleLogout}>
-          Salir
-        </button>
-      ) : (
-        <button type="button" className="nav-cta" onClick={() => goTo('login')}>
-          Entrar
-        </button>
-      )}
-    </>
-  )
+  const navLinkClass = ({ isActive }) => (isActive ? 'topnav-link is-active' : 'topnav-link')
+
+  const navItems = useMemo(() => [
+    { key: 'home', label: 'Inicio', path: routePaths.home, show: () => true },
+    { key: 'search', label: 'Buscar puestos', path: routePaths.search, show: () => true },
+    { key: 'register-oferente', label: 'Registro oferente', path: routePaths['register-oferente'], show: () => !token },
+    { key: 'register-empresa', label: 'Registro empresa', path: routePaths['register-empresa'], show: () => !token },
+    { key: 'dashboard', label: 'Dashboard', path: routePaths.dashboard, show: () => Boolean(token) },
+    { key: 'empresa', label: 'Empresa', path: routePaths.empresa, show: () => user?.rol === 'EMPRESA' },
+    { key: 'oferente', label: 'Oferente', path: routePaths.oferente, show: () => user?.rol === 'OFERENTE' },
+    { key: 'admin', label: 'Admin', path: routePaths.admin, show: () => user?.rol === 'ADMIN' },
+  ], [token, user])
+
+  const visibleNav = useMemo(() => navItems.filter(i => i.show()), [navItems])
 
   return (
     <main className="app-shell">
       <header className="topbar">
-        <button type="button" className="brand" onClick={() => goTo('home')}>
-          Bolsa de Empleo
-        </button>
+        <Link to={routePaths.home} className="brand">
+          <span className="brand-mark">BE</span>
+          <span>
+            <strong>Bolsa de Empleo</strong>
+            <small>Conecta talento y oportunidades</small>
+          </span>
+        </Link>
 
-        <nav className="topnav">{topbarButtons}</nav>
+        <nav className="topnav" aria-label="Navegación principal">
+          {visibleNav.map(item => (
+            <NavLink key={item.key} to={item.path} end={item.key === 'home'} className={navLinkClass}>
+              {item.label}
+            </NavLink>
+          ))}
+
+          {token ? (
+            <button type="button" className="nav-cta" onClick={handleLogout}>
+              Salir
+            </button>
+          ) : (
+            <button type="button" className="nav-cta" onClick={() => goTo('login')}>
+              Entrar
+            </button>
+          )}
+        </nav>
       </header>
 
       {message ? <p className="global-message">{message}</p> : null}

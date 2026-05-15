@@ -119,20 +119,48 @@ function CompanyScreen({ token, onNavigate }) {
 
   return (
     <section className="page-section">
-      <div className="page-hero">
-        <div>
+      <div className="page-hero hero-split">
+        <div className="hero-copy">
           <p className="eyebrow">Empresa</p>
           <h1>Gestión de puestos y candidatos</h1>
-          <p className="lead">Pantalla React que reemplaza el dashboard, publicar puesto y buscar candidatos.</p>
+          <p className="lead">
+            Administra tus publicaciones, detén vacantes cuando encuentres talento y revisa
+            candidatos con coincidencia suficiente para cada puesto.
+          </p>
+
+          <div className="page-actions">
+            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>
+              Dashboard genérico
+            </button>
+            <button className="secondary-button" onClick={() => onNavigate('home')}>
+              Inicio
+            </button>
+          </div>
         </div>
-        <div className="page-actions">
-          <button className="secondary-button" onClick={() => onNavigate('dashboard')}>
-            Dashboard genérico
-          </button>
-          <button className="secondary-button" onClick={() => onNavigate('home')}>
-            Inicio
-          </button>
-        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Panel de empresa</p>
+          <div className="hero-steps">
+            <article>
+              <strong>Publicaciones</strong>
+              <span>Controla puestos públicos y privados desde un solo lugar.</span>
+            </article>
+            <article>
+              <strong>Candidatos</strong>
+              <span>Busca perfiles compatibles con las características requeridas.</span>
+            </article>
+            <article>
+              <strong>CV</strong>
+              <span>Revisa el currículo PDF de cada candidato desde el detalle.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <div className="metric-grid">
+        <article className="metric-card"><span>Puestos</span><strong>{String(jobs.length).padStart(2, '0')}</strong></article>
+        <article className="metric-card"><span>Activos</span><strong>{String(jobs.filter((job) => job.activo).length).padStart(2, '0')}</strong></article>
+        <article className="metric-card"><span>Buscador</span><strong>{candidateSearch ? 'Abierto' : 'Listo'}</strong></article>
       </div>
 
       {loading ? <p className="info-banner">Cargando información de empresa...</p> : null}

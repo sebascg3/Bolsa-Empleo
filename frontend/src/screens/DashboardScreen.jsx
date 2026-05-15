@@ -53,40 +53,79 @@ function DashboardScreen({ token, user, onNavigate, onLogout }) {
   }
 
   const role = dashboard?.role || user?.rol || 'USUARIO'
+  const summaryCards = dashboard
+    ? [
+        { label: 'Rol', value: role },
+        { label: 'Últimos puestos', value: String(dashboard.recentJobs?.length || 0).padStart(2, '0') },
+        {
+          label: role === 'EMPRESA' ? 'Publicaciones' : role === 'OFERENTE' ? 'Habilidades' : 'Pendientes',
+          value:
+            role === 'EMPRESA'
+              ? String(dashboard.myJobs?.length || 0).padStart(2, '0')
+              : role === 'OFERENTE'
+                ? String(dashboard.skills?.length || 0).padStart(2, '0')
+                : String((dashboard.pendingEmpresas?.length || 0) + (dashboard.pendingOferentes?.length || 0)).padStart(2, '0'),
+        },
+      ]
+    : []
 
   return (
     <section className="page-section">
-      <div className="page-hero">
-        <div>
+      <div className="page-hero hero-split">
+        <div className="hero-copy">
           <p className="eyebrow">Dashboard</p>
           <h1>{user?.nombre || dashboard?.user?.nombre || 'Usuario autenticado'}</h1>
           <p className="lead">
             Vista cargada desde `/api/dashboard` según el rol <strong>{role}</strong>.
           </p>
+
+          <div className="page-actions">
+            <button className="secondary-button" onClick={() => onNavigate('home')}>
+              Inicio público
+            </button>
+            {role === 'EMPRESA' ? (
+              <button className="secondary-button" onClick={() => onNavigate('empresa')}>
+                Pantalla de empresa
+              </button>
+            ) : null}
+            {role === 'OFERENTE' ? (
+              <button className="secondary-button" onClick={() => onNavigate('oferente')}>
+                Pantalla de oferente
+              </button>
+            ) : null}
+            {role === 'ADMIN' ? (
+              <button className="secondary-button" onClick={() => onNavigate('admin')}>
+                Pantalla de admin
+              </button>
+            ) : null}
+            <button className="secondary-button" onClick={onLogout}>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
-        <div className="page-actions">
-          <button className="secondary-button" onClick={() => onNavigate('home')}>
-            Inicio público
-          </button>
-          {role === 'EMPRESA' ? (
-            <button className="secondary-button" onClick={() => onNavigate('empresa')}>
-              Pantalla de empresa
-            </button>
-          ) : null}
-          {role === 'OFERENTE' ? (
-            <button className="secondary-button" onClick={() => onNavigate('oferente')}>
-              Pantalla de oferente
-            </button>
-          ) : null}
-          {role === 'ADMIN' ? (
-            <button className="secondary-button" onClick={() => onNavigate('admin')}>
-              Pantalla de admin
-            </button>
-          ) : null}
-          <button className="secondary-button" onClick={onLogout}>
-            Cerrar sesión
-          </button>
-        </div>
+
+        <aside className="hero-panel">
+          <p className="eyebrow">Resumen rápido</p>
+          <div className="hero-steps">
+            <article>
+              <strong>Sesión segura</strong>
+              <span>Todo el acceso se realiza con JWT y permisos por rol.</span>
+            </article>
+            <article>
+              <strong>Atajos</strong>
+              <span>Usa el panel superior para moverte entre tus pantallas principales.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <div className="metric-grid">
+        {summaryCards.map((card) => (
+          <article key={card.label} className="metric-card">
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+          </article>
+        ))}
       </div>
 
       {loading ? <p className="info-banner">Cargando dashboard...</p> : null}
