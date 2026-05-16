@@ -3,7 +3,6 @@ import './App.css'
 import { HashRouter, Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import HomeScreen from './screens/HomeScreen'
 import SearchScreen from './screens/SearchScreen'
-import LoginScreen from './screens/LoginScreen'
 import DashboardScreen from './screens/DashboardScreen'
 import RegisterOferenteScreen from './screens/RegisterOferenteScreen'
 import RegisterCompanyScreen from './screens/RegisterCompanyScreen'
@@ -19,11 +18,11 @@ import AdminApplicantsScreen from './screens/AdminApplicantsScreen'
 import AdminCharacteristicsScreen from './screens/AdminCharacteristicsScreen'
 import AdminReportsScreen from './screens/AdminReportsScreen'
 import { clearStoredToken, getStoredToken, requestJSON, setStoredToken } from './lib/api'
+import LoginModal from './components/LoginModal'
 
 const routePaths = {
   home: '/home',
   search: '/search',
-  login: '/login',
   dashboard: '/dashboard',
   'register-oferente': '/register-oferente',
   'register-empresa': '/register-empresa',
@@ -125,6 +124,7 @@ function AppRouter() {
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState('')
   const [isLoadingSession, setIsLoadingSession] = useState(Boolean(getStoredToken()))
+  const [showLogin, setShowLogin] = useState(false)
 
   const currentPath = useMemo(() => {
     const raw = location.pathname.replace(/\/+$/, '')
@@ -186,6 +186,7 @@ function AppRouter() {
     setToken(auth.token)
     setUser(auth.user)
     setMessage('Sesión iniciada correctamente.')
+    setShowLogin(false)          // ← agregar esta línea
     goTo(getRoleHomePath(auth.user?.rol))
   }
 
@@ -235,9 +236,9 @@ function AppRouter() {
               Salir
             </button>
           ) : (
-            <button type="button" className="nav-cta" onClick={() => goTo('login')}>
-              Entrar
-            </button>
+              <button type="button" className="nav-cta" onClick={() => setShowLogin(true)}>
+                Entrar
+              </button>
           )}
         </nav>
       </header>
@@ -250,7 +251,6 @@ function AppRouter() {
         <Route path={routePaths.search} element={<SearchScreen token={token} />} />
         <Route path={routePaths['register-oferente']} element={<RegisterOferenteScreen onNavigate={goTo} />} />
         <Route path={routePaths['register-empresa']} element={<RegisterCompanyScreen onNavigate={goTo} />} />
-        <Route path={routePaths.login} element={<LoginScreen onLoginSuccess={handleLoginSuccess} onNavigate={goTo} />} />
         <Route
           path={routePaths.dashboard}
           element={(
@@ -349,6 +349,13 @@ function AppRouter() {
         />
         <Route path="*" element={<Navigate to={routePaths.home} replace />} />
       </Routes>
+      {showLogin ? (
+        <LoginModal
+            onLoginSuccess={handleLoginSuccess}
+            onClose={() => setShowLogin(false)}
+        />
+    ) : null}
+
     </main>
   )
 }
