@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import JobCard from '../components/JobCard'
+import RouteCards from '../components/RouteCards'
 import { requestJSON } from '../lib/api'
 
 function DashboardScreen({ token, user, onNavigate, onLogout }) {
@@ -54,20 +54,99 @@ function DashboardScreen({ token, user, onNavigate, onLogout }) {
 
   const role = dashboard?.role || user?.rol || 'USUARIO'
   const summaryCards = dashboard
+    ? role === 'ADMIN'
+      ? [
+          { label: 'Rol', value: role },
+          { label: 'Empresas', value: String(dashboard.pendingEmpresas?.length || 0).padStart(2, '0') },
+          { label: 'Oferentes', value: String(dashboard.pendingOferentes?.length || 0).padStart(2, '0') },
+        ]
+      : role === 'EMPRESA'
+        ? [
+            { label: 'Rol', value: role },
+            { label: 'Puestos', value: String(dashboard.myJobs?.length || 0).padStart(2, '0') },
+            { label: 'Recientes', value: String(dashboard.recentJobs?.length || 0).padStart(2, '0') },
+          ]
+        : [
+            { label: 'Rol', value: role },
+            { label: 'Habilidades', value: String(dashboard.skills?.length || 0).padStart(2, '0') },
+            { label: 'CV', value: dashboard.cv ? 'Cargado' : 'Pendiente' },
+          ]
+    : []
+
+  const quickActions = role === 'ADMIN'
     ? [
-        { label: 'Rol', value: role },
-        { label: 'Últimos puestos', value: String(dashboard.recentJobs?.length || 0).padStart(2, '0') },
         {
-          label: role === 'EMPRESA' ? 'Publicaciones' : role === 'OFERENTE' ? 'Habilidades' : 'Pendientes',
-          value:
-            role === 'EMPRESA'
-              ? String(dashboard.myJobs?.length || 0).padStart(2, '0')
-              : role === 'OFERENTE'
-                ? String(dashboard.skills?.length || 0).padStart(2, '0')
-                : String((dashboard.pendingEmpresas?.length || 0) + (dashboard.pendingOferentes?.length || 0)).padStart(2, '0'),
+          key: 'admin-companies',
+          eyebrow: 'Administración',
+          title: 'Empresas pendientes',
+          description: 'Aprueba o rechaza las empresas antes de que publiquen puestos.',
+          cta: 'Abrir empresas pendientes',
+          path: 'admin-companies',
+        },
+        {
+          key: 'admin-applicants',
+          eyebrow: 'Administración',
+          title: 'Oferentes pendientes',
+          description: 'Revisa a las personas registradas antes de habilitar su acceso completo.',
+          cta: 'Abrir oferentes pendientes',
+          path: 'admin-applicants',
+        },
+        {
+          key: 'admin-characteristics',
+          eyebrow: 'Catálogo',
+          title: 'Características',
+          description: 'Administra el árbol de habilidades y categorías del sistema.',
+          cta: 'Abrir características',
+          path: 'admin-characteristics',
+        },
+        {
+          key: 'admin-reports',
+          eyebrow: 'Informes',
+          title: 'Reportes',
+          description: 'Consulta los reportes de puestos por mes y año.',
+          cta: 'Abrir reportes',
+          path: 'admin-reports',
         },
       ]
-    : []
+    : role === 'EMPRESA'
+      ? [
+          {
+            key: 'empresa-jobs',
+            eyebrow: 'Empresa',
+            title: 'Ver mis puestos',
+            description: 'Consulta tus vacantes publicadas, actívalas o desactívalas y revisa candidatos.',
+            cta: 'Ir a mis puestos',
+            path: 'empresa-jobs',
+          },
+          {
+            key: 'empresa-publish',
+            eyebrow: 'Empresa',
+            title: 'Publicar nuevo puesto',
+            description: 'Crea una nueva vacante con salario, tipo y características requeridas.',
+            cta: 'Publicar puesto',
+            path: 'empresa-publish',
+          },
+        ]
+      : role === 'OFERENTE'
+        ? [
+            {
+              key: 'oferente-skills',
+              eyebrow: 'Oferente',
+              title: 'Mis habilidades',
+              description: 'Edita las características y niveles que te representan.',
+              cta: 'Ir a habilidades',
+              path: 'oferente-skills',
+            },
+            {
+              key: 'oferente-cv',
+              eyebrow: 'Oferente',
+              title: 'Mi CV',
+              description: 'Carga o elimina tu hoja de vida PDF desde una pantalla dedicada.',
+              cta: 'Ir a mi CV',
+              path: 'oferente-cv',
+            },
+          ]
+        : []
 
   return (
     <section className="page-section">
@@ -133,7 +212,7 @@ function DashboardScreen({ token, user, onNavigate, onLogout }) {
 
       {dashboard ? (
         <div className="dashboard-layout">
-          <div className="content-card">
+          <div className="content-card full-width">
             <div className="card-heading">
               <p className="eyebrow">Información de sesión</p>
               <h2>{dashboard.user.nombre}</h2>
@@ -154,73 +233,17 @@ function DashboardScreen({ token, user, onNavigate, onLogout }) {
             </dl>
           </div>
 
-          {role === 'ADMIN' ? (
-            <>
-              <div className="content-card">
-                <p className="eyebrow">Pendientes</p>
-                <h2>Empresas por aprobar: {dashboard.pendingEmpresas.length}</h2>
-                <div className="detail-list">
-                  {dashboard.pendingEmpresas.map((item) => (
-                    <article key={`empresa-${item.id}`} className="detail-item">
-                      <strong>{item.nombre}</strong>
-                      <span>{item.correo}</span>
-                      <small>{item.detalle}</small>
-                    </article>
-                  ))}
-                </div>
-              </div>
-
-              <div className="content-card">
-                <p className="eyebrow">Pendientes</p>
-                <h2>Oferentes por aprobar: {dashboard.pendingOferentes.length}</h2>
-                <div className="detail-list">
-                  {dashboard.pendingOferentes.map((item) => (
-                    <article key={`oferente-${item.id}`} className="detail-item">
-                      <strong>{item.nombre}</strong>
-                      <span>{item.correo}</span>
-                      <small>{item.detalle}</small>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : null}
-
-          {role === 'EMPRESA' ? (
-            <div className="content-card full-width">
-              <p className="eyebrow">Mis publicaciones</p>
-              <h2>{dashboard.myJobs.length} puestos publicados</h2>
-              <div className="card-grid">
-                {dashboard.myJobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {role === 'OFERENTE' ? (
-            <div className="content-card full-width">
-              <p className="eyebrow">Mis habilidades</p>
-              <h2>{dashboard.skills.length} características registradas</h2>
-              <div className="skill-grid">
-                {dashboard.skills.map((skill) => (
-                  <article key={skill.id} className="skill-card">
-                    <strong>{skill.nombre}</strong>
-                    <span>Nivel {skill.nivel}</span>
-                  </article>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
           <div className="content-card full-width">
-            <p className="eyebrow">Puestos recientes</p>
-            <h2>Últimos puestos publicados</h2>
-            <div className="card-grid">
-              {dashboard.recentJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
+            <div className="section-intro">
+              <div>
+                <p className="eyebrow">Accesos directos</p>
+                <h2>{role === 'ADMIN' ? 'Elige el módulo que quieres administrar' : role === 'EMPRESA' ? 'Administra tus vacantes' : role === 'OFERENTE' ? 'Gestiona tu perfil' : 'Accesos disponibles'}</h2>
+              </div>
+              <p>
+                Las secciones grandes se movieron a pantallas separadas para que cada flujo sea más claro y rápido de usar.
+              </p>
             </div>
+            <RouteCards items={quickActions} onNavigate={onNavigate} />
           </div>
         </div>
       ) : null}

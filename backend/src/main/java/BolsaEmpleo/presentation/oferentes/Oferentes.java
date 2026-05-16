@@ -1,6 +1,5 @@
 package BolsaEmpleo.presentation.oferentes;
 
-import BolsaEmpleo.logic.Caracteristica;
 import BolsaEmpleo.logic.CaracteristicaOferente;
 import BolsaEmpleo.logic.Oferente;
 import BolsaEmpleo.logic.Service;
@@ -82,25 +81,15 @@ public class Oferentes {
         try {
             Oferente oferente = obtenerOferenteActual(userDetails);
 
-            service.oferenteCaracteristicasPorOferente(oferente.getId())
-                    .forEach(co -> service.oferenteCaracteristicaDelete(co.getId()));
-
+            Map<Integer, Integer> niveles = new HashMap<>();
             if (seleccionadas != null) {
                 for (Integer idCar : seleccionadas) {
-                    Caracteristica caracteristica = service.caracteristicaFindById(idCar)
-                            .orElseThrow(() -> new IllegalArgumentException("Característica no encontrada"));
-
                     String nivelStr = request.getParameter("nivel_" + idCar);
-                    Integer nivel = (nivelStr == null || nivelStr.isBlank()) ? 1 : Integer.parseInt(nivelStr);
-
-                    CaracteristicaOferente co = new CaracteristicaOferente();
-                    co.setIdOferente(oferente);
-                    co.setIdCaracteristica(caracteristica);
-                    co.setNivel(nivel);
-
-                    service.oferenteCaracteristicaSave(co);
+                    niveles.put(idCar, (nivelStr == null || nivelStr.isBlank()) ? 1 : Integer.parseInt(nivelStr));
                 }
             }
+
+            service.reemplazarCaracteristicasOferente(oferente, seleccionadas, niveles);
 
             redirectAttributes.addFlashAttribute("exito", "Habilidades guardadas correctamente.");
         } catch (Exception e) {

@@ -1,13 +1,18 @@
 package BolsaEmpleo.logic;
 import BolsaEmpleo.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @org.springframework.stereotype.Service
@@ -188,6 +193,47 @@ public class Service {
 
     public void oferenteCaracteristicaDelete(int id) {
         oferenteCaracteristicaRepository.deleteById(id);
+    }
+
+    @Transactional
+    public List<CaracteristicaOferente> reemplazarCaracteristicasOferente(Oferente oferente,
+                                                                          List<Integer> seleccionadas,
+                                                                          Map<Integer, Integer> niveles) {
+        List<CaracteristicaOferente> actuales = new ArrayList<>(oferenteCaracteristicasPorOferente(oferente.getId()));
+        Set<Integer> seleccionUnica = seleccionadas == null ? Collections.emptySet() : new LinkedHashSet<>(seleccionadas);
+        Map<Integer, CaracteristicaOferente> actualesPorCaracteristica = actuales.stream()
+                .collect(Collectors.toMap(
+                        co -> co.getIdCaracteristica().getId(),
+                        co -> co,
+                        (a, b) -> a,
+                        HashMap::new
+                ));
+
+        for (CaracteristicaOferente actual : actuales) {
+            Integer idCaracteristica = actual.getIdCaracteristica().getId();
+            if (!seleccionUnica.contains(idCaracteristica)) {
+                oferenteCaracteristicaRepository.delete(actual);
+            }
+        }
+
+        oferenteCaracteristicaRepository.flush();
+
+        for (Integer idCaracteristica : seleccionUnica) {
+            Caracteristica caracteristica = caracteristicaFindById(idCaracteristica)
+                    .orElseThrow(() -> new IllegalArgumentException("Característica no encontrada"));
+            Integer nivel = niveles != null && niveles.get(idCaracteristica) != null ? niveles.get(idCaracteristica) : 1;
+
+            CaracteristicaOferente actual = actualesPorCaracteristica.get(idCaracteristica);
+            if (actual == null) {
+                actual = new CaracteristicaOferente();
+                actual.setIdOferente(oferente);
+                actual.setIdCaracteristica(caracteristica);
+            }
+            actual.setNivel(nivel);
+            oferenteCaracteristicaRepository.save(actual);
+        }
+
+        return oferenteCaracteristicasPorOferente(oferente.getId());
     }
 
 

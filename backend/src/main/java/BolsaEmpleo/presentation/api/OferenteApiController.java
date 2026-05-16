@@ -2,7 +2,6 @@ package BolsaEmpleo.presentation.api;
 
 import BolsaEmpleo.api.dto.SkillResponse;
 import BolsaEmpleo.api.dto.SkillUpsertRequest;
-import BolsaEmpleo.logic.Caracteristica;
 import BolsaEmpleo.logic.CaracteristicaOferente;
 import BolsaEmpleo.logic.Oferente;
 import BolsaEmpleo.logic.Service;
@@ -59,24 +58,7 @@ public class OferenteApiController {
 															 @RequestBody SkillUpsertRequest request) {
 		Oferente oferente = currentOferente(userDetails);
 
-		service.oferenteCaracteristicasPorOferente(oferente.getId())
-				.forEach(co -> service.oferenteCaracteristicaDelete(co.getId()));
-
-		if (request.caracteristicasSeleccionadas() != null) {
-			for (Integer idCar : request.caracteristicasSeleccionadas()) {
-				Caracteristica caracteristica = service.caracteristicaFindById(idCar)
-						.orElseThrow(() -> new IllegalArgumentException("Característica no encontrada"));
-				Integer nivel = request.niveles() != null && request.niveles().get(idCar) != null
-						? request.niveles().get(idCar)
-						: 1;
-
-				CaracteristicaOferente co = new CaracteristicaOferente();
-				co.setIdOferente(oferente);
-				co.setIdCaracteristica(caracteristica);
-				co.setNivel(nivel);
-				service.oferenteCaracteristicaSave(co);
-			}
-		}
+		service.reemplazarCaracteristicasOferente(oferente, request.caracteristicasSeleccionadas(), request.niveles());
 
 		return ResponseEntity.ok(getSkills(userDetails));
 	}
