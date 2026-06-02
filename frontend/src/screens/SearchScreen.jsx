@@ -9,7 +9,6 @@ function SearchScreen({ token }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const activeFilters = selectedIds.length
 
   useEffect(() => {
     let active = true
@@ -43,7 +42,7 @@ function SearchScreen({ token }) {
 
   function toggleSelected(id) {
     setSelectedIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+        current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     )
   }
 
@@ -77,93 +76,53 @@ function SearchScreen({ token }) {
   }
 
   return (
-    <section className="page-section">
-      <div className="page-hero hero-split">
-        <div className="hero-copy">
-          <p className="eyebrow">Búsqueda pública</p>
-          <h1>Filtra puestos por características</h1>
-          <p className="lead">
-            Esta pantalla migra la búsqueda tradicional a React y actualiza los resultados sin
-            recargar la página.
-          </p>
+      <section className="page-section">
+        {loading ? <p className="info-banner">Cargando características y resultados...</p> : null}
+        {error ? <p className="error-banner">{error}</p> : null}
 
-          <div className="page-actions">
-            <button className="primary-button" onClick={search}>
-              Buscar ahora
-            </button>
-            <button className="secondary-button" onClick={clearFilters}>
-              Limpiar filtros
-            </button>
-          </div>
-        </div>
-
-        <aside className="hero-panel">
-          <p className="eyebrow">Sugerencia</p>
-          <div className="hero-steps">
-            <article>
-              <strong>Selecciona habilidades</strong>
-              <span>Marca una o varias características del árbol para afinar la coincidencia.</span>
-            </article>
-            <article>
-              <strong>Revisa resultados</strong>
-              <span>Las tarjetas muestran la coincidencia y el detalle visible al pasar el mouse.</span>
-            </article>
-            <article>
-              <strong>Sin recargar</strong>
-              <span>Los filtros se envían por `fetch`, así la experiencia es más ágil.</span>
-            </article>
-          </div>
-        </aside>
-      </div>
-
-      <div className="metric-grid">
-        <article className="metric-card">
-          <span>Filtros activos</span>
-          <strong>{String(activeFilters).padStart(2, '0')}</strong>
-        </article>
-        <article className="metric-card">
-          <span>Resultados visibles</span>
-          <strong>{String(jobs.length).padStart(2, '0')}</strong>
-        </article>
-        <article className="metric-card">
-          <span>Privados</span>
-          <strong>{token ? 'Incluidos' : 'Ocultos'}</strong>
-        </article>
-      </div>
-
-      {loading ? <p className="info-banner">Cargando características y resultados...</p> : null}
-      {error ? <p className="error-banner">{error}</p> : null}
-
-      <div className="search-layout">
-        <aside className="content-card search-panel">
-          <div className="card-heading">
-            <p className="eyebrow">Características</p>
-            <h2>Selecciona una o varias</h2>
-          </div>
+        <div className="search-layout-column">
           <form onSubmit={search}>
-            <CharacteristicTree nodes={tree} selectedIds={selectedIds} onToggle={toggleSelected} />
+            <aside className="content-card">
+              <div className="card-heading">
+                <p className="eyebrow">Búsqueda pública</p>
+                <h2>Filtrar puestos</h2>
+              </div>
+
+              <div className="search-panel">
+                <CharacteristicTree nodes={tree} selectedIds={selectedIds} onToggle={toggleSelected} />
+              </div>
+            </aside>
+
+            <div className="filter-actions">
+              <button className="primary-button search-button" type="submit">
+                Buscar puestos
+              </button>
+
+              <button className="secondary-button" type="button" onClick={clearFilters}>
+                Limpiar filtros
+              </button>
+            </div>
           </form>
-        </aside>
 
-        <div className="content-card">
-          <div className="card-heading">
-            <p className="eyebrow">Resultados</p>
-            <h2>Puestos encontrados</h2>
-          </div>
-          <div className="card-grid">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
+          <div className="content-card">
+            <div className="card-heading">
+              <p className="eyebrow">Resultados</p>
+              <h2>Puestos encontrados</h2>
+            </div>
 
-          {!loading && jobs.length === 0 ? (
-            <p className="empty-state">No se encontraron puestos con ese filtro.</p>
-          ) : null}
+            <div className="card-grid">
+              {jobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+              ))}
+            </div>
+
+            {!loading && jobs.length === 0 ? (
+                <p className="empty-state">No se encontraron puestos con ese filtro.</p>
+            ) : null}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
   )
 }
 
 export default SearchScreen
-

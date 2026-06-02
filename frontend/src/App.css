@@ -303,7 +303,7 @@ textarea:focus-visible {
 }
 
 .card-grid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
 }
 
 .route-grid {
@@ -358,15 +358,15 @@ textarea:focus-visible {
   padding: 18px;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.96));
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid #2b2d30;
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  transition: all 0.2s ease;
 }
 
 .job-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  border-color: rgba(79, 70, 229, 0.2);
+  border-color: #712ebf;
 }
 
 /* Ensure hovered card and its popover are above other cards
@@ -482,9 +482,19 @@ textarea:focus-visible {
 }
 
 .search-panel {
-  overflow: hidden;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.filter-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px 0;
 }
 
+.search-button {
+  min-width: 180px;
+}
 .tree-list {
   list-style: none;
   padding-left: 0;
@@ -764,4 +774,62 @@ textarea:focus-visible {
   font-weight: 700;
   color: #0f172a;
   margin: 0;
+}
+
+.required-field {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.auth-form label:has(input[required]) {
+  color: #111827;
+  font-weight: 700;
+}
+
+.auth-form input,
+.auth-form select,
+.auth-form textarea {
+  border: 1px solid #4c4cb0;
+  border-radius: 12px;
+}
+
+.auth-form input:required:focus {
+  border-color: #2b2d30;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.auth-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 1.5rem;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form .full-width {
+  grid-column: 1 / -1;
+}
+.login-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-modal-form label {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.login-modal-form input {
+  width: 100%;
+}
+
+.login-modal-form .page-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
 }

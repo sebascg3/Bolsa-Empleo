@@ -40,7 +40,7 @@ function LoginModal({ onLoginSuccess, onClose }) {
 
                 {error ? <p className="error-banner">{error}</p> : null}
 
-                <form className="auth-form" onSubmit={submit}>
+                <form className="auth-form login-modal-form" onSubmit={submit}>
                     <label>
                         Usuario
                         <input type="text" value={usuario}
