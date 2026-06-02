@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>org.example</groupId>
-    <artifactId>Progra4</artifactId>
+    <artifactId>Backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Proyecto Bolsa de Empleo</name>
     <description>Proyecto Bolsa de Empleo</description>
