@@ -201,14 +201,25 @@ function AppRouter() {
   const navLinkClass = ({ isActive }) => (isActive ? 'topnav-link is-active' : 'topnav-link')
 
   const navItems = useMemo(() => [
-    { key: 'home', label: 'Inicio', path: routePaths.home, show: () => true },
-    { key: 'search', label: 'Buscar puestos', path: routePaths.search, show: () => true },
+    { key: 'home', label: 'Inicio', path: routePaths.home, show: () => !token },
+    { key: 'search', label: 'Buscar puestos', path: routePaths.search, show: () => !token },
     { key: 'register-oferente', label: 'Registro oferente', path: routePaths['register-oferente'], show: () => !token },
     { key: 'register-empresa', label: 'Registro empresa', path: routePaths['register-empresa'], show: () => !token },
-    { key: 'dashboard', label: 'Dashboard', path: routePaths.dashboard, show: () => Boolean(token) },
-    { key: 'empresa', label: 'Empresa', path: routePaths.empresa, show: () => user?.rol === 'EMPRESA' },
-    { key: 'oferente', label: 'Oferente', path: routePaths.oferente, show: () => user?.rol === 'OFERENTE' },
-    { key: 'admin', label: 'Admin', path: routePaths.admin, show: () => user?.rol === 'ADMIN' },
+
+
+    { key: 'empresa', label: 'Dashboard', path: routePaths.empresa, show: () => user?.rol === 'EMPRESA' },
+    { key: 'empresa-jobs', label: 'Mis puestos', path: routePaths['empresa-jobs'], show: () => user?.rol === 'EMPRESA' },
+    { key: 'empresa-publish', label: 'Publicar puesto', path: routePaths['empresa-publish'], show: () => user?.rol === 'EMPRESA' },
+
+    { key: 'oferente', label: 'Dashboard', path: routePaths.oferente, show: () => user?.rol === 'OFERENTE' },
+    { key: 'oferente-skills', label: 'Mis habilidades', path: routePaths['oferente-skills'], show: () => user?.rol === 'OFERENTE' },
+    { key: 'oferente-cv', label: 'Mi CV', path: routePaths['oferente-cv'], show: () => user?.rol === 'OFERENTE' },
+
+    { key: 'admin', label: 'Dashboard', path: routePaths.admin, show: () => user?.rol === 'ADMIN' },
+    { key: 'admin-companies', label: 'Empresas pendientes', path: routePaths['admin-companies'], show: () => user?.rol === 'ADMIN' },
+    { key: 'admin-applicants', label: 'Oferentes pendientes', path: routePaths['admin-applicants'], show: () => user?.rol === 'ADMIN' },
+    { key: 'admin-characteristics', label: 'Características', path: routePaths['admin-characteristics'], show: () => user?.rol === 'ADMIN' },
+    { key: 'admin-reports', label: 'Reportes', path: routePaths['admin-reports'], show: () => user?.rol === 'ADMIN' },
   ], [token, user])
 
   const visibleNav = useMemo(() => navItems.filter(i => i.show()), [navItems])
@@ -226,9 +237,14 @@ function AppRouter() {
 
         <nav className="topnav" aria-label="Navegación principal">
           {visibleNav.map(item => (
-            <NavLink key={item.key} to={item.path} end={item.key === 'home'} className={navLinkClass}>
-              {item.label}
-            </NavLink>
+              <NavLink
+                  key={item.key}
+                  to={item.path}
+                  end
+                  className={navLinkClass}
+              >
+                {item.label}
+              </NavLink>
           ))}
 
           {token ? (

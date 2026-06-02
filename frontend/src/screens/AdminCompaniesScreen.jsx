@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { requestJSON } from '../lib/api'
 
-function AdminCompaniesScreen({ token, onNavigate }) {
+function AdminCompaniesScreen({ token }) {
   const [pendingCompanies, setPendingCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -11,6 +11,7 @@ function AdminCompaniesScreen({ token, onNavigate }) {
     if (!token) return
 
     let active = true
+
     async function load() {
       try {
         setLoading(true)
@@ -27,6 +28,7 @@ function AdminCompaniesScreen({ token, onNavigate }) {
     }
 
     void load()
+
     return () => {
       active = false
     }
@@ -37,80 +39,54 @@ function AdminCompaniesScreen({ token, onNavigate }) {
       await requestJSON(`/admin/empresas/${id}/aprobar`, { token, method: 'POST' })
       setPendingCompanies((current) => current.filter((item) => item.id !== id))
       setSuccess('Empresa aprobada correctamente.')
+      setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo aprobar la empresa')
     }
   }
 
   return (
-    <section className="page-section">
-      <div className="page-hero hero-split">
-        <div className="hero-copy">
-          <p className="eyebrow">Administrador</p>
-          <h1>Empresas pendientes</h1>
-          <p className="lead">Aprueba los registros empresariales antes de que puedan entrar al sistema y publicar puestos.</p>
+      <section className="page-section">
+        {loading ? <p className="info-banner">Cargando empresas pendientes...</p> : null}
+        {error ? <p className="error-banner">{error}</p> : null}
+        {success ? <p className="global-message">{success}</p> : null}
 
-          <div className="page-actions">
-            <button className="secondary-button" onClick={() => onNavigate('admin')}>
-              Panel de administrador
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('admin-applicants')}>
-              Oferentes pendientes
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>
-              Dashboard
-            </button>
+        <div className="content-card full-width">
+
+
+          <div className="pending-grid">
+            {pendingCompanies.map((item) => (
+                <article key={item.id} className="pending-card">
+                  <div>
+                    <p className="eyebrow">Solicitud empresarial</p>
+                    <h3>{item.nombre}</h3>
+                    <div className="pending-info">
+  <span>
+    <strong>Correo:</strong> {item.correo}
+  </span>
+                      <span>
+    <strong>Detalle:</strong> {item.detalle || 'Sin detalle registrado'}
+  </span>
+                    </div>
+                  </div>
+
+                  <button
+                      className="approve-button"
+                      type="button"
+                      onClick={() => approveCompany(item.id)}
+                  >
+                    Aprobar empresa
+                  </button>
+                </article>
+            ))}
           </div>
+
+          {!loading && pendingCompanies.length === 0 ? (
+              <p className="empty-state">No hay empresas pendientes por aprobar.</p>
+          ) : null}
         </div>
-
-        <aside className="hero-panel">
-          <p className="eyebrow">Flujo de aprobación</p>
-          <div className="hero-steps">
-            <article>
-              <strong>Verificar</strong>
-              <span>Revisa el correo y el detalle de cada solicitud.</span>
-            </article>
-            <article>
-              <strong>Aprobar</strong>
-              <span>Confirma las empresas válidas para habilitar su acceso.</span>
-            </article>
-            <article>
-              <strong>Continuar</strong>
-              <span>Pasa al siguiente módulo cuando termines esta lista.</span>
-            </article>
-          </div>
-        </aside>
-      </div>
-
-      <div className="metric-grid">
-        <article className="metric-card"><span>Pendientes</span><strong>{String(pendingCompanies.length).padStart(2, '0')}</strong></article>
-        <article className="metric-card"><span>Acción</span><strong>Aprobar</strong></article>
-        <article className="metric-card"><span>Estado</span><strong>{success ? 'Actualizado' : 'Listo'}</strong></article>
-      </div>
-
-      {loading ? <p className="info-banner">Cargando empresas pendientes...</p> : null}
-      {error ? <p className="error-banner">{error}</p> : null}
-      {success ? <p className="global-message">{success}</p> : null}
-
-      <div className="content-card full-width">
-        <p className="eyebrow">Empresas por aprobar</p>
-        <h2>{pendingCompanies.length} solicitudes</h2>
-        <div className="detail-list">
-          {pendingCompanies.map((item) => (
-            <article key={item.id} className="detail-item">
-              <strong>{item.nombre}</strong>
-              <span>{item.correo}</span>
-              <small>{item.detalle}</small>
-              <button className="secondary-button" type="button" onClick={() => approveCompany(item.id)}>
-                Aprobar
-              </button>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
+      </section>
   )
 }
 
 export default AdminCompaniesScreen
-
