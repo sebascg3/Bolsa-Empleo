@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -105,7 +108,28 @@ public class OferenteApiController {
 		service.oferenteUpdate(oferente);
 		return ResponseEntity.ok(nombreArchivo);
 	}
+	@GetMapping("/cv/archivo")
+	@Transactional(readOnly = true)
+	public ResponseEntity<Resource> getCvFile(@AuthenticationPrincipal UserDetailsImp userDetails) throws Exception {
+		Oferente oferente = currentOferente(userDetails);
 
+		if (oferente.getCv() == null || oferente.getCv().isBlank()) {
+			throw new IllegalArgumentException("No hay CV cargado.");
+		}
+
+		Path archivo = Paths.get(System.getProperty("user.dir"), "uploads", oferente.getCv());
+
+		if (!Files.exists(archivo)) {
+			throw new IllegalArgumentException("El archivo del CV no existe.");
+		}
+
+		Resource resource = new UrlResource(archivo.toUri());
+
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + oferente.getCv() + "\"")
+				.body(resource);
+	}
 	@DeleteMapping("/cv")
 	@Transactional
 	public ResponseEntity<Void> deleteCv(@AuthenticationPrincipal UserDetailsImp userDetails) {

@@ -134,10 +134,17 @@ public class AdminApiController {
 									 @RequestParam("mes") Integer mes,
 									 @RequestParam("anio") Integer anio) {
 		currentAdmin(userDetails);
+
 		List<JobCardResponse> puestos = new ArrayList<>();
+
 		for (Puesto p : service.puestosPorMesYAnio(mes, anio)) {
-			puestos.add(ApiMapper.toJobCard(p));
+			puestos.add(ApiMapper.toJobCard(
+					p,
+					null,
+					service.puestoCaracteristicasFindByPuesto(p.getId())
+			));
 		}
+
 		return new ReportResponse(mes, anio, puestos.size(), puestos);
 	}
 
@@ -147,4 +154,5 @@ public class AdminApiController {
 		Administrador admin = currentAdmin(userDetails);
 		return ApiMapper.toUserInfo(admin.getUsuario());
 	}
+
 }

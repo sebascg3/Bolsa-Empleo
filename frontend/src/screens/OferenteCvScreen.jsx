@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { requestJSON, requestText } from '../lib/api'
 
-function OferenteCvScreen({ token, onNavigate }) {
+function OferenteCvScreen({ token }) {
   const [cv, setCv] = useState('')
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -12,12 +12,14 @@ function OferenteCvScreen({ token, onNavigate }) {
     if (!token) return
 
     let active = true
+
     async function load() {
       try {
         setLoading(true)
         const cvData = await requestText('/oferente/cv', { token })
         if (active) {
           setCv(cvData || '')
+          setError('')
         }
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : 'Error inesperado')
@@ -27,6 +29,7 @@ function OferenteCvScreen({ token, onNavigate }) {
     }
 
     void load()
+
     return () => {
       active = false
     }
@@ -36,18 +39,54 @@ function OferenteCvScreen({ token, onNavigate }) {
     event.preventDefault()
     setError('')
     setSuccess('')
+
     if (!file) {
       setError('Debes seleccionar un PDF.')
       return
     }
+
     try {
       const data = new FormData()
       data.append('cv', file)
-      const uploaded = await requestText('/oferente/cv', { token, method: 'POST', body: data })
+
+      const uploaded = await requestText('/oferente/cv', {
+        token,
+        method: 'POST',
+        body: data,
+      })
+
       setCv(uploaded)
+      setFile(null)
       setSuccess('CV cargado correctamente.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar el CV')
+    }
+  }
+
+  async function openCv() {
+    if (!cv) {
+      setError('No hay CV cargado.')
+      return
+    }
+
+    try {
+      setError('')
+
+      const response = await fetch('/api/oferente/cv/archivo', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('No se pudo abrir el CV.')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      window.open(url, '_blank')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo abrir el CV')
     }
   }
 
@@ -55,77 +94,78 @@ function OferenteCvScreen({ token, onNavigate }) {
     try {
       await requestJSON('/oferente/cv', { token, method: 'DELETE' })
       setCv('')
+      setFile(null)
       setSuccess('CV eliminado.')
+      setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo eliminar el CV')
     }
   }
 
   return (
-    <section className="page-section">
-      <div className="page-hero hero-split">
-        <div className="hero-copy">
-          <p className="eyebrow">Oferente</p>
-          <h1>Mi CV</h1>
-          <p className="lead">Gestiona tu hoja de vida PDF en una pantalla clara, sin mezclarla con el resto del perfil.</p>
+      <section className="page-section">
+        {loading ? <p className="info-banner">Cargando CV...</p> : null}
+        {error ? <p className="error-banner">{error}</p> : null}
+        {success ? <p className="global-message">{success}</p> : null}
 
-          <div className="page-actions">
-            <button className="secondary-button" onClick={() => onNavigate('oferente-skills')}>
-              Ir a mis habilidades
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('oferente')}>
-              Panel de oferente
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>
-              Dashboard
-            </button>
+        <div className="content-card full-width">
+          <div className="card-heading">
+            <h2>Mi Currículum</h2>
           </div>
+
+          <div className="cv-preview-card">
+            <div>
+              <strong>Estado</strong>
+              <p>{cv ? 'CV cargado correctamente' : 'No hay CV cargado'}</p>
+            </div>
+
+            {cv ? (
+                <span className="job-pill job-pill--state is-active">
+    CV cargado
+  </span>
+            ) : (
+                <span className="job-pill job-pill--state is-inactive">
+    Sin archivo
+  </span>
+            )}
+          </div>
+
+          {cv ? (
+              <div className="page-actions">
+                <button className="primary-button" type="button" onClick={openCv}>
+                  Ver CV
+                </button>
+              </div>
+          ) : null}
+
+          <form className="cv-form" onSubmit={uploadCv}>
+            <label className="upload-area">
+              <span>Seleccionar archivo PDF</span>
+              <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+
+            <div className="page-actions">
+              <button className="upload-button" type="submit">
+                {cv ? 'Cargar nuevo CV' : 'Cargar CV'}
+              </button>
+
+              <button
+                  className="danger-button"
+                  type="button"
+                  onClick={deleteCv}
+                  disabled={!cv}
+              >
+                Eliminar CV
+              </button>
+            </div>
+          </form>
         </div>
-
-        <aside className="hero-panel">
-          <p className="eyebrow">Gestión de archivo</p>
-          <div className="hero-steps">
-            <article>
-              <strong>Subir</strong>
-              <span>Selecciona un PDF actualizado con tu experiencia.</span>
-            </article>
-            <article>
-              <strong>Revisar</strong>
-              <span>Verifica el archivo cargado antes de compartirlo con empresas.</span>
-            </article>
-            <article>
-              <strong>Eliminar</strong>
-              <span>Si necesitas cambiarlo, borra el anterior y sube el nuevo.</span>
-            </article>
-          </div>
-        </aside>
-      </div>
-
-      <div className="metric-grid">
-        <article className="metric-card"><span>CV</span><strong>{cv ? 'Cargado' : 'Pendiente'}</strong></article>
-        <article className="metric-card"><span>Archivo</span><strong>{cv || 'N/D'}</strong></article>
-        <article className="metric-card"><span>Estado</span><strong>{success ? 'Actualizado' : 'Pendiente'}</strong></article>
-      </div>
-
-      {loading ? <p className="info-banner">Cargando CV...</p> : null}
-      {error ? <p className="error-banner">{error}</p> : null}
-      {success ? <p className="global-message">{success}</p> : null}
-
-      <div className="content-card full-width">
-        <p className="eyebrow">CV</p>
-        <h2>Archivo actual</h2>
-        <p>{cv || 'No hay CV cargado'}</p>
-        <form className="auth-form" onSubmit={uploadCv}>
-          <input type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          <div className="page-actions">
-            <button className="primary-button" type="submit">Cargar CV</button>
-            <button className="secondary-button" type="button" onClick={deleteCv}>Eliminar CV</button>
-          </div>
-        </form>
-      </div>
-    </section>
+      </section>
   )
 }
 
 export default OferenteCvScreen
-

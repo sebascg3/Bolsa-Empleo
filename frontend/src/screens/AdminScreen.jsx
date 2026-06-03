@@ -4,7 +4,7 @@ function AdminScreen({ onNavigate }) {
   const shortcuts = [
     {
       key: 'admin-companies',
-      eyebrow: 'Administrador',
+      eyebrow: '',
       title: 'Empresas pendientes',
       description: 'Aprobación de registros empresariales antes de habilitar sus publicaciones.',
       cta: 'Abrir empresas pendientes',
@@ -12,7 +12,7 @@ function AdminScreen({ onNavigate }) {
     },
     {
       key: 'admin-applicants',
-      eyebrow: 'Administrador',
+      eyebrow: '',
       title: 'Oferentes pendientes',
       description: 'Revisión de personas registradas para habilitar su acceso al sistema.',
       cta: 'Abrir oferentes pendientes',
@@ -20,15 +20,15 @@ function AdminScreen({ onNavigate }) {
     },
     {
       key: 'admin-characteristics',
-      eyebrow: 'Catálogo',
+      eyebrow: '',
       title: 'Características',
-      description: 'Gestiona el árbol de habilidades y categorías del sistema.',
+      description: 'Gestiona el árbol de habilidades de puestos de trabajo y oferentes del sistema.                                                                          ',
       cta: 'Abrir características',
       path: 'admin-characteristics',
     },
     {
       key: 'admin-reports',
-      eyebrow: 'Informes',
+      eyebrow: '',
       title: 'Reportes',
       description: 'Consulta los reportes de puestos por mes y año en una vista dedicada.',
       cta: 'Abrir reportes',
@@ -40,10 +40,7 @@ function AdminScreen({ onNavigate }) {
       <section className="page-section">
         <div className="content-card full-width">
           <div className="section-intro">
-            <div>
-              <p className="eyebrow">Administrador</p>
-              <h2>Panel de administración</h2>
-            </div>
+
           </div>
 
           <RouteCards items={shortcuts} onNavigate={onNavigate} />

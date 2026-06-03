@@ -56,7 +56,7 @@ public class PublicApiController {
         List<JobCardResponse> puestos = new ArrayList<>();
         for (Puesto puesto : service.buscarPuestosPorCaracteristicas(seleccionadas, incluirPrivados)) {
             puestos.add(ApiMapper.toJobCard(puesto,
-                    service.porcentajeCoincidenciaPuesto(puesto, seleccionadas),
+                    null,
                     service.puestoCaracteristicasFindByPuesto(puesto.getId())));
         }
         return new PublicSearchResponse(puestos, caracteristicasArbol(), seleccionadas);
