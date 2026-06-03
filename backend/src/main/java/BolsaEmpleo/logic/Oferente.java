@@ -32,9 +32,7 @@ public class Oferente {
     @Column(name = "identificacion", nullable = false, length = 45)
     private String identificacion;
 
-    @Size(max = 45)
-    @Column(name = "apellido", length = 45)
-    private String apellido;
+
 
     @Size(max = 45)
     @Column(name = "nacionalidad", length = 45)
@@ -56,5 +54,8 @@ public class Oferente {
     @Size(max = 300)
     @Column(name = "cv", length = 300)
     private String cv;
+
+    @Column(name = "foto_perfil")
+    private String fotoPerfil;
 
 }

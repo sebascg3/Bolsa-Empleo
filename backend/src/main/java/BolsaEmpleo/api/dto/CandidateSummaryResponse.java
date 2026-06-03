@@ -5,7 +5,6 @@ import java.util.List;
 public record CandidateSummaryResponse(
         Integer id,
         String nombre,
-        String apellido,
         String correo,
         String identificacion,
         String nacionalidad,
@@ -13,7 +12,7 @@ public record CandidateSummaryResponse(
         String residencia,
         String cv,
         Integer requisitosCumplidos,
-        Integer porcentaje,
+        Integer porcentaje,String fotoPerfil,
         List<CandidateSkillResponse> habilidades
 ) {
 }

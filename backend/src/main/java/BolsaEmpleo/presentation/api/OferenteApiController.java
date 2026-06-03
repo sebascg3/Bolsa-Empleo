@@ -1,5 +1,5 @@
 package BolsaEmpleo.presentation.api;
-
+import java.util.Map;
 import BolsaEmpleo.api.dto.SkillResponse;
 import BolsaEmpleo.api.dto.SkillUpsertRequest;
 import BolsaEmpleo.logic.CaracteristicaOferente;
@@ -138,4 +138,90 @@ public class OferenteApiController {
 		service.oferenteUpdate(oferente);
 		return ResponseEntity.noContent().build();
 	}
+
+
+	@GetMapping("/foto")
+	@Transactional(readOnly = true)
+	public ResponseEntity<Map<String, String>> getFoto(@AuthenticationPrincipal UserDetailsImp userDetails) {
+		Oferente oferente = currentOferente(userDetails);
+
+		return ResponseEntity.ok(
+				Map.of("fotoPerfil", oferente.getFotoPerfil() == null ? "" : oferente.getFotoPerfil())
+		);
+	}
+
+	@PostMapping("/foto")
+	@Transactional
+	public ResponseEntity<Map<String, String>> uploadFoto(
+			@AuthenticationPrincipal UserDetailsImp userDetails,
+			@RequestParam("foto") MultipartFile foto
+	) throws Exception {
+		if (foto == null || foto.isEmpty()) {
+			throw new IllegalArgumentException("Debes seleccionar una imagen.");
+		}
+
+		String original = foto.getOriginalFilename();
+		if (original == null) {
+			throw new IllegalArgumentException("Archivo inválido.");
+		}
+
+		String lower = original.toLowerCase();
+
+		if (!lower.endsWith(".jpg") && !lower.endsWith(".jpeg") && !lower.endsWith(".png")) {
+			throw new IllegalArgumentException("La foto debe ser JPG, JPEG o PNG.");
+		}
+
+		Oferente oferente = currentOferente(userDetails);
+
+		String extension = lower.substring(lower.lastIndexOf("."));
+		String nombreArchivo = oferente.getId() + extension;
+
+		Path carpeta = Paths.get(System.getProperty("user.dir"), "uploads", "fotos");
+		Files.createDirectories(carpeta);
+
+		foto.transferTo(carpeta.resolve(nombreArchivo).toFile());
+
+		oferente.setFotoPerfil(nombreArchivo);
+		service.oferenteUpdate(oferente);
+
+		return ResponseEntity.ok(Map.of("fotoPerfil", nombreArchivo));
+	}
+
+	@GetMapping("/foto/archivo")
+	@Transactional(readOnly = true)
+	public ResponseEntity<Resource> getFotoFile(@AuthenticationPrincipal UserDetailsImp userDetails) throws Exception {
+		Oferente oferente = currentOferente(userDetails);
+
+		if (oferente.getFotoPerfil() == null || oferente.getFotoPerfil().isBlank()) {
+			throw new IllegalArgumentException("No hay foto cargada.");
+		}
+
+		Path archivo = Paths.get(System.getProperty("user.dir"), "uploads", "fotos", oferente.getFotoPerfil());
+
+		if (!Files.exists(archivo)) {
+			throw new IllegalArgumentException("El archivo de la foto no existe.");
+		}
+
+		Resource resource = new UrlResource(archivo.toUri());
+
+		String lower = oferente.getFotoPerfil().toLowerCase();
+		MediaType mediaType = lower.endsWith(".png")
+				? MediaType.IMAGE_PNG
+				: MediaType.IMAGE_JPEG;
+
+		return ResponseEntity.ok()
+				.contentType(mediaType)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + oferente.getFotoPerfil() + "\"")
+				.body(resource);
+	}
+
+	@DeleteMapping("/foto")
+	@Transactional
+	public ResponseEntity<Void> deleteFoto(@AuthenticationPrincipal UserDetailsImp userDetails) {
+		Oferente oferente = currentOferente(userDetails);
+		oferente.setFotoPerfil(null);
+		service.oferenteUpdate(oferente);
+		return ResponseEntity.noContent().build();
+	}
+
 }

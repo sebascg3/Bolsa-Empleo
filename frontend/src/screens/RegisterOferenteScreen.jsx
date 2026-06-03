@@ -4,7 +4,6 @@ import { requestJSON } from '../lib/api'
 function RegisterOferenteScreen({ onNavigate }) {
   const [form, setForm] = useState({
     nombre: '',
-    apellido: '',
     correo: '',
     password: '',
     identificacion: '',
@@ -64,11 +63,6 @@ function RegisterOferenteScreen({ onNavigate }) {
             <label>
               Nombre completo <span className="required-field">*</span>
               <input value={form.nombre} onChange={(e) => update('nombre', e.target.value)} required />
-            </label>
-
-            <label>
-              Primer apellido <span className="required-field">*</span>
-              <input value={form.apellido} onChange={(e) => update('apellido', e.target.value)} required />
             </label>
 
             <label>

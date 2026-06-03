@@ -14,6 +14,7 @@ import CompanyPublishScreen from './screens/CompanyPublishScreen'
 import OferenteScreen from './screens/OferenteScreen'
 import OferenteSkillsScreen from './screens/OferenteSkillsScreen'
 import OferenteCvScreen from './screens/OferenteCvScreen'
+import OferentePhotoScreen from './screens/OferentePhotoScreen'
 import AdminScreen from './screens/AdminScreen'
 import AdminCompaniesScreen from './screens/AdminCompaniesScreen'
 import AdminApplicantsScreen from './screens/AdminApplicantsScreen'
@@ -28,14 +29,18 @@ const routePaths = {
   dashboard: '/dashboard',
   'register-oferente': '/register-oferente',
   'register-empresa': '/register-empresa',
+
   empresa: '/empresa',
   'empresa-jobs': '/empresa/mis-puestos',
   'empresa-publish': '/empresa/publicar-puesto',
   'empresa-candidates': '/empresa/puestos/:puestoId/candidatos',
   'empresa-candidate-profile': '/empresa/candidatos/:candidateId',
+
   oferente: '/oferente',
   'oferente-skills': '/oferente/mis-habilidades',
   'oferente-cv': '/oferente/mi-cv',
+  'oferente-photo': '/oferente/mi-foto',
+
   admin: '/admin',
   'admin-companies': '/admin/empresas-pendientes',
   'admin-applicants': '/admin/oferentes-pendientes',
@@ -64,31 +69,37 @@ function toPath(target) {
 
 const protectedPaths = [
   routePaths.dashboard,
+
   routePaths.empresa,
   routePaths['empresa-jobs'],
   routePaths['empresa-publish'],
+  routePaths['empresa-candidates'],
+  routePaths['empresa-candidate-profile'],
+
   routePaths.oferente,
   routePaths['oferente-skills'],
   routePaths['oferente-cv'],
+  routePaths['oferente-photo'],
+
   routePaths.admin,
   routePaths['admin-companies'],
   routePaths['admin-applicants'],
   routePaths['admin-characteristics'],
   routePaths['admin-reports'],
-  routePaths['empresa-candidates'],
-  routePaths['empresa-candidate-profile']
-
 ]
 
 function isProtectedPath(path) {
-  return protectedPaths.some((protectedPath) => path === protectedPath || path.startsWith(`${protectedPath}/`))
+  return protectedPaths.some((protectedPath) => {
+    const normalizedProtectedPath = protectedPath.replace(/:\w+/g, '')
+    return path === protectedPath || path.startsWith(`${normalizedProtectedPath}`)
+  })
 }
 
 function LoadingState({ label }) {
   return (
-    <section className="page-section">
-      <p className="info-banner">{label}</p>
-    </section>
+      <section className="page-section">
+        <p className="info-banner">{label}</p>
+      </section>
   )
 }
 
@@ -98,7 +109,7 @@ function RequireAuth({ token, isLoading, children }) {
   }
 
   if (!token) {
-    return <Navigate to={routePaths.login} replace />
+    return <Navigate to={routePaths.home} replace />
   }
 
   return children
@@ -110,7 +121,7 @@ function RequireRole({ token, isLoading, user, roles, children }) {
   }
 
   if (!token) {
-    return <Navigate to={routePaths.login} replace />
+    return <Navigate to={routePaths.home} replace />
   }
 
   if (!user) {
@@ -163,12 +174,13 @@ function AppRouter() {
         }
       } catch (error) {
         clearStoredToken()
-          if (active) {
+        if (active) {
           setToken('')
           setUser(null)
           setMessage(error instanceof Error ? error.message : 'La sesión expiró.')
-            if (isProtectedPath(currentPath)) {
-            navigate(routePaths.login, { replace: true })
+
+          if (isProtectedPath(currentPath)) {
+            navigate(routePaths.home, { replace: true })
           }
         }
       } finally {
@@ -179,6 +191,7 @@ function AppRouter() {
     }
 
     void syncUser()
+
     return () => {
       active = false
     }
@@ -193,7 +206,7 @@ function AppRouter() {
     setToken(auth.token)
     setUser(auth.user)
     setMessage('Sesión iniciada correctamente.')
-    setShowLogin(false)          // ← agregar esta línea
+    setShowLogin(false)
     goTo(getRoleHomePath(auth.user?.rol))
   }
 
@@ -213,7 +226,6 @@ function AppRouter() {
     { key: 'register-oferente', label: 'Registro oferente', path: routePaths['register-oferente'], show: () => !token },
     { key: 'register-empresa', label: 'Registro empresa', path: routePaths['register-empresa'], show: () => !token },
 
-
     { key: 'empresa', label: 'Dashboard', path: routePaths.empresa, show: () => user?.rol === 'EMPRESA' },
     { key: 'empresa-jobs', label: 'Mis puestos', path: routePaths['empresa-jobs'], show: () => user?.rol === 'EMPRESA' },
     { key: 'empresa-publish', label: 'Publicar puesto', path: routePaths['empresa-publish'], show: () => user?.rol === 'EMPRESA' },
@@ -221,6 +233,7 @@ function AppRouter() {
     { key: 'oferente', label: 'Dashboard', path: routePaths.oferente, show: () => user?.rol === 'OFERENTE' },
     { key: 'oferente-skills', label: 'Mis habilidades', path: routePaths['oferente-skills'], show: () => user?.rol === 'OFERENTE' },
     { key: 'oferente-cv', label: 'Mi CV', path: routePaths['oferente-cv'], show: () => user?.rol === 'OFERENTE' },
+    { key: 'oferente-photo', label: 'Mi foto', path: routePaths['oferente-photo'], show: () => user?.rol === 'OFERENTE' },
 
     { key: 'admin', label: 'Dashboard', path: routePaths.admin, show: () => user?.rol === 'ADMIN' },
     { key: 'admin-companies', label: 'Empresas pendientes', path: routePaths['admin-companies'], show: () => user?.rol === 'ADMIN' },
@@ -229,180 +242,205 @@ function AppRouter() {
     { key: 'admin-reports', label: 'Reportes', path: routePaths['admin-reports'], show: () => user?.rol === 'ADMIN' },
   ], [token, user])
 
-  const visibleNav = useMemo(() => navItems.filter(i => i.show()), [navItems])
+  const visibleNav = useMemo(() => navItems.filter((item) => item.show()), [navItems])
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <Link to={routePaths.home} className="brand">
-          <span className="brand-mark">BE</span>
-          <span>
+      <main className="app-shell">
+        <header className="topbar">
+          <Link to={routePaths.home} className="brand">
+            <span className="brand-mark">BE</span>
+            <span>
             <strong>Bolsa de Empleo</strong>
           </span>
-        </Link>
+          </Link>
 
-        <nav className="topnav" aria-label="Navegación principal">
-          {visibleNav.map(item => (
-              <NavLink
-                  key={item.key}
-                  to={item.path}
-                  end
-                  className={navLinkClass}
-              >
-                {item.label}
-              </NavLink>
-          ))}
+          <nav className="topnav" aria-label="Navegación principal">
+            {visibleNav.map((item) => (
+                <NavLink
+                    key={item.key}
+                    to={item.path}
+                    end
+                    className={navLinkClass}
+                >
+                  {item.label}
+                </NavLink>
+            ))}
 
-          {token ? (
-            <button type="button" className="nav-cta" onClick={handleLogout}>
-              Salir
-            </button>
-          ) : (
-              <button type="button" className="nav-cta" onClick={() => setShowLogin(true)}>
-                Entrar
-              </button>
-          )}
-        </nav>
-      </header>
-
-      {message ? <p className="global-message">{message}</p> : null}
-
-      <Routes>
-        <Route path="/" element={<Navigate to={routePaths.home} replace />} />
-        <Route path={routePaths.home} element={<HomeScreen onNavigate={goTo} token={token} />} />
-        <Route path={routePaths.search} element={<SearchScreen token={token} />} />
-        <Route path={routePaths['register-oferente']} element={<RegisterOferenteScreen onNavigate={goTo} />} />
-        <Route path={routePaths['register-empresa']} element={<RegisterCompanyScreen onNavigate={goTo} />} />
-        <Route
-          path={routePaths.dashboard}
-          element={(
-            <RequireAuth token={token} isLoading={isLoadingSession}>
-              <DashboardScreen token={token} user={user} onNavigate={goTo} onLogout={handleLogout} />
-            </RequireAuth>
-          )}
-        />
-        <Route
-          path={routePaths.empresa}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'EMPRESA' ]}>
-              <CompanyScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-            path={routePaths['empresa-candidates']}
-            element={(
-                <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
-                  <CompanyCandidatesScreen token={token} onNavigate={goTo} />
-                </RequireRole>
+            {token ? (
+                <button type="button" className="nav-cta" onClick={handleLogout}>
+                  Salir
+                </button>
+            ) : (
+                <button type="button" className="nav-cta" onClick={() => setShowLogin(true)}>
+                  Entrar
+                </button>
             )}
-        />
-        <Route
-            path={routePaths['empresa-candidate-profile']}
-            element={(
-                <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
-                  <CompanyCandidateProfileScreen token={token} />
-                </RequireRole>
-            )}
-        />
-        <Route
-          path={routePaths['empresa-jobs']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'EMPRESA' ]}>
-              <CompanyJobsScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['empresa-publish']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'EMPRESA' ]}>
-              <CompanyPublishScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths.oferente}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'OFERENTE' ]}>
-              <OferenteScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['oferente-skills']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'OFERENTE' ]}>
-              <OferenteSkillsScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['oferente-cv']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'OFERENTE' ]}>
-              <OferenteCvScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths.admin}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'ADMIN' ]}>
-              <AdminScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['admin-companies']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'ADMIN' ]}>
-              <AdminCompaniesScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['admin-applicants']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'ADMIN' ]}>
-              <AdminApplicantsScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['admin-characteristics']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'ADMIN' ]}>
-              <AdminCharacteristicsScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route
-          path={routePaths['admin-reports']}
-          element={(
-            <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={[ 'ADMIN' ]}>
-              <AdminReportsScreen token={token} onNavigate={goTo} />
-            </RequireRole>
-          )}
-        />
-        <Route path="*" element={<Navigate to={routePaths.home} replace />} />
-      </Routes>
-      {showLogin ? (
-        <LoginModal
-            onLoginSuccess={handleLoginSuccess}
-            onClose={() => setShowLogin(false)}
-        />
-    ) : null}
+          </nav>
+        </header>
 
-    </main>
+        {message ? <p className="global-message">{message}</p> : null}
+
+        <Routes>
+          <Route path="/" element={<Navigate to={routePaths.home} replace />} />
+          <Route path={routePaths.home} element={<HomeScreen onNavigate={goTo} token={token} />} />
+          <Route path={routePaths.search} element={<SearchScreen token={token} />} />
+
+          <Route path={routePaths['register-oferente']} element={<RegisterOferenteScreen onNavigate={goTo} />} />
+          <Route path={routePaths['register-empresa']} element={<RegisterCompanyScreen onNavigate={goTo} />} />
+
+          <Route
+              path={routePaths.dashboard}
+              element={(
+                  <RequireAuth token={token} isLoading={isLoadingSession}>
+                    <DashboardScreen token={token} user={user} onNavigate={goTo} onLogout={handleLogout} />
+                  </RequireAuth>
+              )}
+          />
+
+          <Route
+              path={routePaths.empresa}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                    <CompanyScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['empresa-candidates']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                    <CompanyCandidatesScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['empresa-candidate-profile']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                    <CompanyCandidateProfileScreen token={token} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['empresa-jobs']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                    <CompanyJobsScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['empresa-publish']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                    <CompanyPublishScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths.oferente}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['OFERENTE']}>
+                    <OferenteScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['oferente-skills']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['OFERENTE']}>
+                    <OferenteSkillsScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['oferente-cv']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['OFERENTE']}>
+                    <OferenteCvScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['oferente-photo']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['OFERENTE']}>
+                    <OferentePhotoScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths.admin}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['ADMIN']}>
+                    <AdminScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['admin-companies']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['ADMIN']}>
+                    <AdminCompaniesScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['admin-applicants']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['ADMIN']}>
+                    <AdminApplicantsScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['admin-characteristics']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['ADMIN']}>
+                    <AdminCharacteristicsScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route
+              path={routePaths['admin-reports']}
+              element={(
+                  <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['ADMIN']}>
+                    <AdminReportsScreen token={token} onNavigate={goTo} />
+                  </RequireRole>
+              )}
+          />
+
+          <Route path="*" element={<Navigate to={routePaths.home} replace />} />
+        </Routes>
+
+        {showLogin ? (
+            <LoginModal
+                onLoginSuccess={handleLoginSuccess}
+                onClose={() => setShowLogin(false)}
+            />
+        ) : null}
+      </main>
   )
 }
 
 function App() {
   return (
-    <HashRouter>
-      <AppRouter />
-    </HashRouter>
+      <HashRouter>
+        <AppRouter />
+      </HashRouter>
   )
 }
 

@@ -1,10 +1,14 @@
+import { useEffect, useMemo, useState } from 'react'
 import RouteCards from '../components/RouteCards'
+import { requestJSON } from '../lib/api'
 
-function OferenteScreen({ onNavigate }) {
+function OferenteScreen({ token, onNavigate }) {
+  const [fotoPerfil, setFotoPerfil] = useState('')
+  const [photoVersion, setPhotoVersion] = useState(0)
+
   const shortcuts = [
     {
       key: 'oferente-skills',
-      eyebrow: '',
       title: 'Mis habilidades',
       description: 'Edita tus destrezas y niveles por característica.',
       cta: 'Abrir habilidades',
@@ -12,7 +16,6 @@ function OferenteScreen({ onNavigate }) {
     },
     {
       key: 'oferente-cv',
-      eyebrow: '',
       title: 'Mi CV',
       description: 'Gestiona tu archivo PDF de currículo.',
       cta: 'Abrir CV',
@@ -20,11 +23,57 @@ function OferenteScreen({ onNavigate }) {
     },
   ]
 
+  const fotoUrl = useMemo(() => {
+    if (!fotoPerfil) return ''
+    return `http://localhost:8080/fotos/${fotoPerfil}?v=${photoVersion}`
+  }, [fotoPerfil, photoVersion])
+
+  useEffect(() => {
+    async function loadPhoto() {
+      try {
+        const response = await requestJSON('/oferente/foto', { token })
+        console.log("FOTO:", response)
+        if (typeof response === 'string') {
+          setFotoPerfil(response)
+        } else {
+          setFotoPerfil(response?.fotoPerfil || '')
+        }
+
+        setPhotoVersion((current) => current + 1)
+      } catch {
+        setFotoPerfil('')
+      }
+    }
+
+    void loadPhoto()
+  }, [token])
+
   return (
       <section className="page-section">
         <div className="content-card full-width">
-          <div className="section-intro">
+          <div className="profile-header">
+            {fotoUrl ? (
+                <img
+                    src={fotoUrl}
+                    alt="Foto de perfil"
+                    className="profile-photo-large"
+                    onError={() => setFotoPerfil('')}
+                />
+            ) : (
+                <div className="profile-photo-placeholder">
+                  <span>👤</span>
+                </div>
+            )}
 
+            <h2>Mi Perfil</h2>
+
+            <button
+                className="secondary-button"
+                type="button"
+                onClick={() => onNavigate('oferente-photo')}
+            >
+              Cambiar foto
+            </button>
           </div>
 
           <RouteCards items={shortcuts} onNavigate={onNavigate} />

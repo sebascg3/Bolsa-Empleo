@@ -78,9 +78,7 @@ public final class ApiMapper {
 
     public static PendingItemResponse toPendingOferente(Oferente oferente) {
         String nombreCompleto = oferente.getUsuario() != null ? oferente.getUsuario().getNombre() : null;
-        if (oferente.getApellido() != null && !oferente.getApellido().isBlank()) {
-            nombreCompleto = (nombreCompleto == null ? "" : nombreCompleto + " ") + oferente.getApellido();
-        }
+
         return new PendingItemResponse(
                 oferente.getId(),
                 nombreCompleto,
@@ -111,8 +109,8 @@ public final class ApiMapper {
                                                               List<CandidateSkillResponse> habilidades) {
         return new CandidateSummaryResponse(
                 oferente.getId(),
-                oferente.getUsuario() != null ? oferente.getUsuario().getNombre() : null,
-                oferente.getApellido(),
+                oferente.getUsuario() != null ? oferente.getUsuario().getNombre() : null
+              ,
                 oferente.getUsuario() != null ? oferente.getUsuario().getCorreo() : null,
                 oferente.getIdentificacion(),
                 oferente.getNacionalidad(),
@@ -120,7 +118,7 @@ public final class ApiMapper {
                 oferente.getResidencia(),
                 oferente.getCv(),
                 requisitosCumplidos,
-                porcentaje,
+                porcentaje, oferente.getFotoPerfil(),
                 habilidades
         );
     }

@@ -57,7 +57,7 @@ public class RegistrationApiController {
 
         Oferente oferente = new Oferente();
         oferente.setIdentificacion(identificacion);
-        oferente.setApellido(apellido);
+
         oferente.setNacionalidad(nacionalidad);
         oferente.setTelefono(telefono);
         oferente.setResidencia(residencia);

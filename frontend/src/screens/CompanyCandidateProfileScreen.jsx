@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { requestJSON } from '../lib/api'
 
@@ -10,6 +10,11 @@ function CompanyCandidateProfileScreen({ token }) {
     const [candidate, setCandidate] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+
+    const fotoUrl = useMemo(() => {
+        if (!candidate?.fotoPerfil) return ''
+        return `http://localhost:8080/fotos/${candidate.fotoPerfil}`
+    }, [candidate])
 
     useEffect(() => {
         if (!token || !candidateId) return
@@ -73,12 +78,24 @@ function CompanyCandidateProfileScreen({ token }) {
             {candidate ? (
                 <>
                     <div className="content-card full-width">
-                        <div className="card-heading">
-                            <p className="eyebrow">Perfil del candidato</p>
-                            <h2>
-                                {candidate.nombre}
-                                {candidate.apellido ? ` ${candidate.apellido}` : ''}
-                            </h2>
+                        <div className="candidate-profile-header">
+                            {fotoUrl ? (
+                                <img
+                                    src={fotoUrl}
+                                    alt={`Foto de ${candidate.nombre}`}
+                                    className="candidate-profile-photo"
+                                />
+                            ) : (
+                                <div className="profile-photo-placeholder">
+                                    <span>👤</span>
+                                </div>
+                            )}
+
+                            <div className="card-heading candidate-profile-title">
+                                <p className="eyebrow">Perfil del candidato</p>
+                                <h2>{candidate.nombre}</h2>
+                                <p className="muted-text">{candidate.correo}</p>
+                            </div>
                         </div>
 
                         <div className="detail-list">
