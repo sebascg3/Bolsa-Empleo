@@ -23,8 +23,6 @@ function CompanyScreen({ onNavigate }) {
   return (
       <section className="page-section">
         <div className="content-card full-width">
-
-
           <RouteCards items={shortcuts} onNavigate={onNavigate} />
         </div>
       </section>
