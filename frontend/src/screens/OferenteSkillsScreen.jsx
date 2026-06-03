@@ -3,6 +3,8 @@ import { requestJSON } from '../lib/api'
 
 function OferenteSkillsScreen({ token }) {
   const [tree, setTree] = useState([])
+  const [currentNodes, setCurrentNodes] = useState([])
+  const [route, setRoute] = useState([])
   const [skills, setSkills] = useState([])
   const [selectedIds, setSelectedIds] = useState([])
   const [levels, setLevels] = useState({})
@@ -26,17 +28,16 @@ function OferenteSkillsScreen({ token }) {
 
         if (active) {
           const currentSkills = skillsData || []
+          const currentTree = treeData || []
+
           setSkills(currentSkills)
-          setTree(flattenTree(treeData || []))
+          setTree(currentTree)
+          setCurrentNodes(currentTree)
+          setRoute([])
 
-          setSelectedIds(currentSkills.map((skill) => skill.id))
+          setSelectedIds([])
 
-          const initialLevels = {}
-          currentSkills.forEach((skill) => {
-            initialLevels[skill.id] = skill.nivel || 1
-          })
-
-          setLevels(initialLevels)
+          setLevels({})
           setError('')
         }
       } catch (err) {
@@ -53,19 +54,22 @@ function OferenteSkillsScreen({ token }) {
     }
   }, [token])
 
-  function flattenTree(nodes, route = []) {
-    return nodes.flatMap((node) => {
-      const currentRoute = [...route, node.nombre]
+  function enterNode(node) {
+    setRoute((current) => [...current, node])
+    setCurrentNodes(node.hijos || [])
+  }
 
-      return [
-        {
-          id: node.id,
-          nombre: node.nombre,
-          route: currentRoute.join(' / '),
-        },
-        ...flattenTree(node.hijos || [], currentRoute),
-      ]
-    })
+  function goToRoot() {
+    setRoute([])
+    setCurrentNodes(tree)
+  }
+
+  function goToRoute(index) {
+    const nextRoute = route.slice(0, index + 1)
+    const lastNode = nextRoute[nextRoute.length - 1]
+
+    setRoute(nextRoute)
+    setCurrentNodes(lastNode.hijos || [])
   }
 
   function toggleSelected(id) {
@@ -88,6 +92,24 @@ function OferenteSkillsScreen({ token }) {
       ...current,
       [id]: Number(value),
     }))
+  }
+
+  function findNodeById(nodes, id) {
+    for (const node of nodes) {
+      if (node.id === id) return node
+
+      const found = findNodeById(node.hijos || [], id)
+      if (found) return found
+    }
+
+    return null
+  }
+
+  function getSkillName(id) {
+    const node = findNodeById(tree, id)
+    const savedSkill = skills.find((skill) => skill.id === id)
+
+    return node?.nombre || savedSkill?.nombre || `Habilidad ${id}`
   }
 
   async function saveSkills(event) {
@@ -121,7 +143,7 @@ function OferenteSkillsScreen({ token }) {
 
         <div className="content-card full-width">
           <div className="card-heading">
-            <p className="eyebrow">Oferente</p>
+
             <h2>Mis habilidades</h2>
           </div>
 
@@ -131,57 +153,70 @@ function OferenteSkillsScreen({ token }) {
                 <p className="eyebrow">Catálogo</p>
                 <h3>Selecciona tus habilidades</h3>
 
-                <div className="skills-selection-grid">
-                  {tree.map((item) => {
-                    const selected = selectedIds.includes(item.id)
+                <div className="skill-breadcrumb">
+                  <button type="button" onClick={goToRoot}>
+                    Todas
+                  </button>
 
-                    return (
-                        <button
-                            key={item.id}
-                            type="button"
-                            className={selected ? 'skill-option is-selected' : 'skill-option'}
-                            onClick={() => toggleSelected(item.id)}
-                        >
-                          <strong>{item.nombre}</strong>
-                          <span>{item.route}</span>
-                        </button>
-                    )
-                  })}
+                  {route.map((item, index) => (
+                      <button key={item.id} type="button" onClick={() => goToRoute(index)}>
+                        / {item.nombre}
+                      </button>
+                  ))}
+                </div>
+
+                <div className="skills-selection-grid">
+                  {currentNodes.length > 0 ? (
+                      currentNodes.map((item) => {
+                        const selected = selectedIds.includes(item.id)
+                        const hasChildren = item.hijos && item.hijos.length > 0
+
+                        return (
+                            <article key={item.id} className={selected ? 'skill-option is-selected' : 'skill-option'}>
+                              <button type="button" className="skill-option-main" onClick={() => toggleSelected(item.id)}>
+                                <strong>{item.nombre}</strong>
+                                <span>{selected ? 'Seleccionada' : 'Agregar habilidad'}</span>
+                              </button>
+
+                              {hasChildren ? (
+                                  <button type="button" className="skill-option-next" onClick={() => enterNode(item)}>
+                                    Ver hijas ›
+                                  </button>
+                              ) : null}
+                            </article>
+                        )
+                      })
+                  ) : (
+                      <p className="empty-state">Esta categoría no tiene más características.</p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <p className="eyebrow">Niveles</p>
-                <h3>Define tu dominio</h3>
+                <h3>Habilidades seleccionadas</h3>
 
                 <div className="selected-skills-panel">
                   {selectedIds.length > 0 ? (
-                      selectedIds.map((id) => {
-                        const skill = tree.find((item) => item.id === id)
+                      selectedIds.map((id) => (
+                          <article key={id} className="selected-skill-card">
+                            <div>
+                              <strong>{getSkillName(id)}</strong>
+                              <span>Nivel actual: {levels[id] || 1}</span>
+                            </div>
 
-                        return (
-                            <article key={id} className="selected-skill-card">
-                              <div>
-                                <strong>{skill?.nombre || `Habilidad ${id}`}</strong>
-                                <span>{skill?.route}</span>
-                              </div>
-
-                              <label>
-                                Nivel
-                                <select
-                                    value={levels[id] || 1}
-                                    onChange={(e) => updateLevel(id, e.target.value)}
-                                >
-                                  <option value="1">1 - Básico</option>
-                                  <option value="2">2 - Principiante</option>
-                                  <option value="3">3 - Intermedio</option>
-                                  <option value="4">4 - Avanzado</option>
-                                  <option value="5">5 - Experto</option>
-                                </select>
-                              </label>
-                            </article>
-                        )
-                      })
+                            <label>
+                              Nivel
+                              <select value={levels[id] || 1} onChange={(e) => updateLevel(id, e.target.value)}>
+                                <option value="1">1 - Básico</option>
+                                <option value="2">2 - Principiante</option>
+                                <option value="3">3 - Intermedio</option>
+                                <option value="4">4 - Avanzado</option>
+                                <option value="5">5 - Experto</option>
+                              </select>
+                            </label>
+                          </article>
+                      ))
                   ) : (
                       <p className="empty-state">Selecciona al menos una habilidad.</p>
                   )}
@@ -195,6 +230,26 @@ function OferenteSkillsScreen({ token }) {
               </button>
             </div>
           </form>
+        </div>
+
+        <div className="content-card full-width">
+          <div className="card-heading">
+            <p className="eyebrow">Perfil actual</p>
+            <h2>Habilidades registradas</h2>
+          </div>
+
+          <div className="registered-skills-grid">
+            {skills.length > 0 ? (
+                skills.map((skill) => (
+                    <article key={skill.id} className="registered-skill-card">
+                      <strong>{skill.nombre}</strong>
+                      <span>Nivel {skill.nivel}</span>
+                    </article>
+                ))
+            ) : (
+                <p className="empty-state">Todavía no tienes habilidades registradas.</p>
+            )}
+          </div>
         </div>
       </section>
   )

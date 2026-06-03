@@ -1189,3 +1189,123 @@ textarea:focus-visible {
   padding: 0 12px;
   background: white;
 }
+.skill-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.skill-breadcrumb button {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+.skill-option {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+  border-color: #4c4cb0;
+}
+
+.skill-option:hover {
+  background: #eef2ff;
+  transform: translateX(4px);
+}
+.skill-option.is-selected {
+  background: linear-gradient(135deg, #2563eb, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+}
+
+.skill-option-main {
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: inherit;
+  padding: 0;
+}
+
+.skill-option-main span {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.skill-option.is-selected .skill-option-main span {
+  color: #e0e7ff;
+}
+
+.skill-option-next {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: #6366f1;
+  font-weight: 700;
+  padding: 0;
+}
+
+.skill-option-next:hover {
+  color: #4f46e5;
+}
+.skill-option strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.skill-option.is-selected .skill-option-next {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.registered-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.registered-skill-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.registered-skill-card span {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.skill-option-next {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0;
+}
+
+.skill-option-next:focus,
+.skill-option-next:focus-visible,
+.skill-option-next:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
