@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import CharacteristicTree from '../components/CharacteristicTree'
 import { requestJSON } from '../lib/api'
 
-function OferenteSkillsScreen({ token, onNavigate }) {
+function OferenteSkillsScreen({ token }) {
   const [tree, setTree] = useState([])
   const [skills, setSkills] = useState([])
   const [selectedIds, setSelectedIds] = useState([])
@@ -15,22 +14,30 @@ function OferenteSkillsScreen({ token, onNavigate }) {
     if (!token) return
 
     let active = true
+
     async function load() {
       try {
         setLoading(true)
+
         const [skillsData, treeData] = await Promise.all([
           requestJSON('/oferente/habilidades', { token }),
           requestJSON('/public/caracteristicas-arbol'),
         ])
+
         if (active) {
-          setSkills(skillsData || [])
-          setTree(treeData || [])
-          setSelectedIds((skillsData || []).map((skill) => skill.id))
+          const currentSkills = skillsData || []
+          setSkills(currentSkills)
+          setTree(flattenTree(treeData || []))
+
+          setSelectedIds(currentSkills.map((skill) => skill.id))
+
           const initialLevels = {}
-          ;(skillsData || []).forEach((skill) => {
+          currentSkills.forEach((skill) => {
             initialLevels[skill.id] = skill.nivel || 1
           })
+
           setLevels(initialLevels)
+          setError('')
         }
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : 'Error inesperado')
@@ -40,26 +47,64 @@ function OferenteSkillsScreen({ token, onNavigate }) {
     }
 
     void load()
+
     return () => {
       active = false
     }
   }, [token])
 
+  function flattenTree(nodes, route = []) {
+    return nodes.flatMap((node) => {
+      const currentRoute = [...route, node.nombre]
+
+      return [
+        {
+          id: node.id,
+          nombre: node.nombre,
+          route: currentRoute.join(' / '),
+        },
+        ...flattenTree(node.hijos || [], currentRoute),
+      ]
+    })
+  }
+
   function toggleSelected(id) {
-    setSelectedIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
-    setLevels((current) => ({ ...current, [id]: current[id] || 1 }))
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        return current.filter((item) => item !== id)
+      }
+
+      return [...current, id]
+    })
+
+    setLevels((current) => ({
+      ...current,
+      [id]: current[id] || 1,
+    }))
+  }
+
+  function updateLevel(id, value) {
+    setLevels((current) => ({
+      ...current,
+      [id]: Number(value),
+    }))
   }
 
   async function saveSkills(event) {
     event.preventDefault()
     setError('')
     setSuccess('')
+
     try {
       await requestJSON('/oferente/habilidades', {
         token,
         method: 'PUT',
-        body: JSON.stringify({ caracteristicasSeleccionadas: selectedIds, niveles: levels }),
+        body: JSON.stringify({
+          caracteristicasSeleccionadas: selectedIds,
+          niveles: levels,
+        }),
       })
+
       const updated = await requestJSON('/oferente/habilidades', { token })
       setSkills(updated || [])
       setSuccess('Habilidades guardadas correctamente.')
@@ -69,98 +114,90 @@ function OferenteSkillsScreen({ token, onNavigate }) {
   }
 
   return (
-    <section className="page-section">
-      <div className="page-hero hero-split">
-        <div className="hero-copy">
-          <p className="eyebrow">Oferente</p>
-          <h1>Mis habilidades</h1>
-          <p className="lead">Edita las características y niveles que te representan para que las empresas te encuentren más rápido.</p>
+      <section className="page-section">
+        {loading ? <p className="info-banner">Cargando habilidades...</p> : null}
+        {error ? <p className="error-banner">{error}</p> : null}
+        {success ? <p className="global-message">{success}</p> : null}
 
-          <div className="page-actions">
-            <button className="secondary-button" onClick={() => onNavigate('oferente-cv')}>
-              Ir a mi CV
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('oferente')}>
-              Panel de oferente
-            </button>
-            <button className="secondary-button" onClick={() => onNavigate('dashboard')}>
-              Dashboard
-            </button>
+        <div className="content-card full-width">
+          <div className="card-heading">
+            <p className="eyebrow">Oferente</p>
+            <h2>Mis habilidades</h2>
           </div>
-        </div>
 
-        <aside className="hero-panel">
-          <p className="eyebrow">Edición guiada</p>
-          <div className="hero-steps">
-            <article>
-              <strong>Seleccionar</strong>
-              <span>Marca las habilidades que sí dominas.</span>
-            </article>
-            <article>
-              <strong>Niveles</strong>
-              <span>Asigna un nivel del 1 al 5 según tu experiencia.</span>
-            </article>
-            <article>
-              <strong>Guardar</strong>
-              <span>Actualiza tu perfil y mantén tu búsqueda de empleo al día.</span>
-            </article>
-          </div>
-        </aside>
-      </div>
+          <form onSubmit={saveSkills}>
+            <div className="skills-layout">
+              <div>
+                <p className="eyebrow">Catálogo</p>
+                <h3>Selecciona tus habilidades</h3>
 
-      <div className="metric-grid">
-        <article className="metric-card"><span>Habilidades</span><strong>{String(skills.length).padStart(2, '0')}</strong></article>
-        <article className="metric-card"><span>Seleccionadas</span><strong>{String(selectedIds.length).padStart(2, '0')}</strong></article>
-        <article className="metric-card"><span>Estado</span><strong>{success ? 'Guardado' : 'Pendiente'}</strong></article>
-      </div>
+                <div className="skills-selection-grid">
+                  {tree.map((item) => {
+                    const selected = selectedIds.includes(item.id)
 
-      {loading ? <p className="info-banner">Cargando habilidades...</p> : null}
-      {error ? <p className="error-banner">{error}</p> : null}
-      {success ? <p className="global-message">{success}</p> : null}
-
-      <div className="content-card full-width">
-        <p className="eyebrow">Editar habilidades</p>
-        <h2>Selecciona y asigna niveles</h2>
-        <form onSubmit={saveSkills}>
-          <CharacteristicTree nodes={tree} selectedIds={selectedIds} onToggle={toggleSelected} />
-
-          {selectedIds.length > 0 ? (
-            <div className="detail-list" style={{ marginTop: '16px' }}>
-              {selectedIds.map((id) => (
-                <div key={id} className="detail-item">
-                  <strong>ID {id}</strong>
-                  <label>
-                    Nivel
-                    <input
-                      type="number"
-                      min="1"
-                      max="5"
-                      value={levels[id] || 1}
-                      onChange={(e) => setLevels((current) => ({ ...current, [id]: Number(e.target.value) }))}
-                    />
-                  </label>
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            className={selected ? 'skill-option is-selected' : 'skill-option'}
+                            onClick={() => toggleSelected(item.id)}
+                        >
+                          <strong>{item.nombre}</strong>
+                          <span>{item.route}</span>
+                        </button>
+                    )
+                  })}
                 </div>
-              ))}
+              </div>
+
+              <div>
+                <p className="eyebrow">Niveles</p>
+                <h3>Define tu dominio</h3>
+
+                <div className="selected-skills-panel">
+                  {selectedIds.length > 0 ? (
+                      selectedIds.map((id) => {
+                        const skill = tree.find((item) => item.id === id)
+
+                        return (
+                            <article key={id} className="selected-skill-card">
+                              <div>
+                                <strong>{skill?.nombre || `Habilidad ${id}`}</strong>
+                                <span>{skill?.route}</span>
+                              </div>
+
+                              <label>
+                                Nivel
+                                <select
+                                    value={levels[id] || 1}
+                                    onChange={(e) => updateLevel(id, e.target.value)}
+                                >
+                                  <option value="1">1 - Básico</option>
+                                  <option value="2">2 - Principiante</option>
+                                  <option value="3">3 - Intermedio</option>
+                                  <option value="4">4 - Avanzado</option>
+                                  <option value="5">5 - Experto</option>
+                                </select>
+                              </label>
+                            </article>
+                        )
+                      })
+                  ) : (
+                      <p className="empty-state">Selecciona al menos una habilidad.</p>
+                  )}
+                </div>
+              </div>
             </div>
-          ) : null}
 
-          <div className="page-actions" style={{ marginTop: '18px' }}>
-            <button className="primary-button" type="submit">Guardar habilidades</button>
-          </div>
-        </form>
-
-        <div className="card-grid" style={{ marginTop: '18px' }}>
-          {skills.map((skill) => (
-            <article key={skill.id} className="skill-card">
-              <strong>{skill.nombre}</strong>
-              <span>Nivel {skill.nivel}</span>
-            </article>
-          ))}
+            <div className="page-actions" style={{ marginTop: '18px' }}>
+              <button className="primary-button" type="submit">
+                Guardar habilidades
+              </button>
+            </div>
+          </form>
         </div>
-      </div>
-    </section>
+      </section>
   )
 }
 
 export default OferenteSkillsScreen
-

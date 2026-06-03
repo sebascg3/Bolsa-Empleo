@@ -1105,3 +1105,87 @@ textarea:focus-visible {
   cursor: not-allowed;
   transform: none;
 }
+
+.skills-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.skills-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.skill-option {
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skill-option span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.skill-option.is-selected {
+  background: linear-gradient(135deg, #2563eb, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+}
+
+.skill-option.is-selected span {
+  color: #e0e7ff;
+}
+
+.selected-skills-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.selected-skill-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selected-skill-card span {
+  display: block;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.selected-skill-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.selected-skill-card select {
+  height: 44px;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: white;
+}
