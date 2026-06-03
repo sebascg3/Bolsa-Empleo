@@ -1,19 +1,18 @@
 package BolsaEmpleo.presentation.api;
+import BolsaEmpleo.logic.*;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import BolsaEmpleo.api.dto.CandidateSearchResponse;
 import BolsaEmpleo.api.dto.CandidateSkillResponse;
 import BolsaEmpleo.api.dto.CandidateSummaryResponse;
 import BolsaEmpleo.api.dto.JobCardResponse;
 import BolsaEmpleo.api.dto.JobUpsertRequest;
-import BolsaEmpleo.logic.Caracteristica;
-import BolsaEmpleo.logic.CaracteristicaOferente;
-import BolsaEmpleo.logic.Empresa;
-import BolsaEmpleo.logic.Oferente;
-import BolsaEmpleo.logic.Puesto;
-import BolsaEmpleo.logic.PuestoCaracteristica;
-import BolsaEmpleo.logic.ResultadoBusquedaCandidatos;
-import BolsaEmpleo.logic.Service;
-import BolsaEmpleo.logic.Usuario;
 import BolsaEmpleo.security.UserDetailsImp;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -150,6 +149,64 @@ public class CompanyApiController {
         }
         Oferente oferente = detalle.getOferente();
         return ResponseEntity.ok(ApiMapper.toCandidateSummary(oferente, habilidades.size(), 100, habilidades));
+    }
+    @GetMapping("/candidatos/{oferenteId}/cv")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Resource> candidateCv(@PathVariable Integer oferenteId) throws Exception {
+
+        Oferente oferente = service.oferenteFindById(oferenteId)
+                .orElseThrow(() -> new IllegalArgumentException("Oferente no encontrado"));
+
+        if (oferente.getCv() == null || oferente.getCv().isBlank()) {
+            throw new IllegalArgumentException("El candidato no tiene CV registrado.");
+        }
+
+        Path archivo = Paths.get(
+                System.getProperty("user.dir"),
+                "uploads",
+                oferente.getCv()
+        );
+
+        if (!Files.exists(archivo)) {
+            throw new IllegalArgumentException("No se encontró el archivo del CV.");
+        }
+
+        Resource resource = new UrlResource(archivo.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + oferente.getCv() + "\""
+                )
+                .body(resource);
+    }
+    @PatchMapping("/puestos/{id}/tipo")
+    @Transactional
+    public ResponseEntity<JobCardResponse> toggleJobType(@PathVariable Integer id,
+                                                         @AuthenticationPrincipal UserDetailsImp userDetails) {
+        Empresa empresa = currentCompany(userDetails);
+
+        Puesto puesto = service.puestoFindById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Puesto no encontrado"));
+
+        if (!puesto.getIdEmpresa().getId().equals(empresa.getId())) {
+            throw new IllegalArgumentException("No puedes modificar un puesto de otra empresa.");
+        }
+
+        if (puesto.getTipo() == TipoPublicacion.PUBLICO) {
+            puesto.setTipo(TipoPublicacion.PRIVADO);
+        } else {
+            puesto.setTipo(TipoPublicacion.PUBLICO);
+        }
+
+        Puesto updated = service.puestoUpdate(puesto);
+
+        return ResponseEntity.ok(ApiMapper.toJobCard(
+                updated,
+                null,
+                service.puestoCaracteristicasFindByPuesto(updated.getId())
+        ));
     }
 }
 

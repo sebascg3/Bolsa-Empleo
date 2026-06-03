@@ -118,17 +118,33 @@ function OferenteSkillsScreen({ token }) {
     setSuccess('')
 
     try {
+      const savedIds = skills.map((skill) => skill.id)
+
+      const mergedIds = Array.from(new Set([...savedIds, ...selectedIds]))
+
+      const mergedLevels = {}
+
+      skills.forEach((skill) => {
+        mergedLevels[skill.id] = skill.nivel || 1
+      })
+
+      Object.entries(levels).forEach(([id, nivel]) => {
+        mergedLevels[id] = nivel
+      })
+
       await requestJSON('/oferente/habilidades', {
         token,
         method: 'PUT',
         body: JSON.stringify({
-          caracteristicasSeleccionadas: selectedIds,
-          niveles: levels,
+          caracteristicasSeleccionadas: mergedIds,
+          niveles: mergedLevels,
         }),
       })
 
       const updated = await requestJSON('/oferente/habilidades', { token })
       setSkills(updated || [])
+      setSelectedIds([])
+      setLevels({})
       setSuccess('Habilidades guardadas correctamente.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron guardar las habilidades')

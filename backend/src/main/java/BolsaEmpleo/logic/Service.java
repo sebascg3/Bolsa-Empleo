@@ -557,4 +557,7 @@ public class Service {
     public List<PuestoCaracteristica> puestoCaracteristicasFindByPuesto(int idPuesto) {
         return puestoCaracteristicaRepository.findByIdPuestoId(idPuesto);
     }
+    public Optional<Oferente> oferenteFindById(Integer id) {
+        return oferenteRepository.findById(id);
+    }
 }

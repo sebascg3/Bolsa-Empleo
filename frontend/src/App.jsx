@@ -8,6 +8,8 @@ import RegisterOferenteScreen from './screens/RegisterOferenteScreen'
 import RegisterCompanyScreen from './screens/RegisterCompanyScreen'
 import CompanyScreen from './screens/CompanyScreen'
 import CompanyJobsScreen from './screens/CompanyJobsScreen'
+import CompanyCandidatesScreen from './screens/CompanyCandidatesScreen'
+import CompanyCandidateProfileScreen from './screens/CompanyCandidateProfileScreen'
 import CompanyPublishScreen from './screens/CompanyPublishScreen'
 import OferenteScreen from './screens/OferenteScreen'
 import OferenteSkillsScreen from './screens/OferenteSkillsScreen'
@@ -29,6 +31,8 @@ const routePaths = {
   empresa: '/empresa',
   'empresa-jobs': '/empresa/mis-puestos',
   'empresa-publish': '/empresa/publicar-puesto',
+  'empresa-candidates': '/empresa/puestos/:puestoId/candidatos',
+  'empresa-candidate-profile': '/empresa/candidatos/:candidateId',
   oferente: '/oferente',
   'oferente-skills': '/oferente/mis-habilidades',
   'oferente-cv': '/oferente/mi-cv',
@@ -71,6 +75,9 @@ const protectedPaths = [
   routePaths['admin-applicants'],
   routePaths['admin-characteristics'],
   routePaths['admin-reports'],
+  routePaths['empresa-candidates'],
+  routePaths['empresa-candidate-profile']
+
 ]
 
 function isProtectedPath(path) {
@@ -231,7 +238,6 @@ function AppRouter() {
           <span className="brand-mark">BE</span>
           <span>
             <strong>Bolsa de Empleo</strong>
-            <small>Conecta talento y oportunidades</small>
           </span>
         </Link>
 
@@ -282,6 +288,22 @@ function AppRouter() {
               <CompanyScreen token={token} onNavigate={goTo} />
             </RequireRole>
           )}
+        />
+        <Route
+            path={routePaths['empresa-candidates']}
+            element={(
+                <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                  <CompanyCandidatesScreen token={token} onNavigate={goTo} />
+                </RequireRole>
+            )}
+        />
+        <Route
+            path={routePaths['empresa-candidate-profile']}
+            element={(
+                <RequireRole token={token} isLoading={isLoadingSession} user={user} roles={['EMPRESA']}>
+                  <CompanyCandidateProfileScreen token={token} />
+                </RequireRole>
+            )}
         />
         <Route
           path={routePaths['empresa-jobs']}
