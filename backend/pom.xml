@@ -27,7 +27,7 @@
         <url/>
     </scm>
     <properties>
-        <!-- Set to 17 to match local JDK; if you have JDK 21, change this back to 21 and set JAVA_HOME accordingly -->
+
         <java.version>17</java.version>
     </properties>
     <dependencies>
